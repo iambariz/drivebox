@@ -1,3 +1,4 @@
+altgraph==0.17.4
 cachetools==5.5.2
 certifi==2025.4.26
 charset-normalizer==3.4.2
@@ -11,14 +12,18 @@ httplib2==0.22.0
 idna==3.10
 mss==10.0.0
 oauthlib==3.2.2
+packaging==25.0
 proto-plus==1.26.1
 protobuf==6.30.2
 pyasn1==0.6.1
 pyasn1_modules==0.4.2
+pyinstaller==6.13.0
+pyinstaller-hooks-contrib==2025.4
 pyparsing==3.2.3
 pyperclip==1.9.0
 requests==2.32.3
 requests-oauthlib==2.0.0
 rsa==4.9.1
+setuptools==80.3.1
 uritemplate==4.1.1
 urllib3==2.4.0

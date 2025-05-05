@@ -20,3 +20,6 @@ credentials.json
 
 #Personal notes
 notes.txt
+
+# Build files
+build/

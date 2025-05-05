@@ -1,3 +1,19 @@
-.venv/
-/venv/
+# Python virtual environment
 venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE/editor files
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+token.pickle
+credentials.json

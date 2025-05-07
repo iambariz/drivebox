@@ -1,21 +1,12 @@
-import pystray
-from pystray import MenuItem as item
-from PIL import Image, ImageDraw
-import threading
-import time
+import sys
+from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
+from PyQt5.QtGui import QIcon
 from screenshot import take_screenshot
 from upload import upload_file_to_drivebox
 import pyperclip
 import os
 
-def create_image():
-    # Create a simple icon (a blue circle)
-    image = Image.new('RGB', (64, 64), color=(0, 0, 0, 0))
-    draw = ImageDraw.Draw(image)
-    draw.ellipse((8, 8, 56, 56), fill='blue')
-    return image
-
-def on_take_screenshot(icon, item):
+def take_and_upload():
     filename = take_screenshot()
     if filename and os.path.exists(filename):
         link = upload_file_to_drivebox(filename)
@@ -25,21 +16,21 @@ def on_take_screenshot(icon, item):
     else:
         print("Screenshot failed.")
 
-def on_exit(icon, item):
-    icon.stop()
-
-def run_tray():
-    icon = pystray.Icon(
-        "DriveBox",
-        create_image(),
-        "DriveBox",
-        menu=pystray.Menu(
-            item('Take Screenshot', on_take_screenshot),
-            item('Exit', on_exit)
-        )
-    )
-    icon.run()
+def main():
+    app = QApplication(sys.argv)
+    # Todo: Create a system tray icon
+    tray_icon = QSystemTrayIcon(QIcon("icon.png"), app)
+    menu = QMenu()
+    screenshot_action = QAction("Take Screenshot")
+    screenshot_action.triggered.connect(take_and_upload)
+    exit_action = QAction("Exit")
+    exit_action.triggered.connect(app.quit)
+    menu.addAction(screenshot_action)
+    menu.addAction(exit_action)
+    tray_icon.setContextMenu(menu)
+    tray_icon.setToolTip("DriveBox")
+    tray_icon.show()
+    sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    # Run the tray icon in the main thread
-    run_tray()
+    main()

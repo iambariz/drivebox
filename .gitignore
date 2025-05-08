@@ -16,6 +16,7 @@ __pycache__/
 Thumbs.db
 
 token.pickle
+token.pickle.old
 credentials.json
 
 #Personal notes

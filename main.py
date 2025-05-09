@@ -1,4 +1,6 @@
 import sys
+import threading
+from pynput import keyboard
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction, QMessageBox
 from PyQt5.QtGui import QIcon
 from screenshot import take_screenshot
@@ -35,7 +37,35 @@ def take_and_upload():
     else:
         print("Screenshot failed.")
 
+
+def on_hotkey():
+    print("Hotkey pressed!")
+    take_and_upload()
+
+def start_hotkey_listener():
+    # Todo: Change hotkey / Give user option to change hotkey
+    COMBO = {keyboard.Key.ctrl_l, keyboard.Key.alt_l, keyboard.KeyCode(char='x')}
+    current = set()
+
+    def on_press(key):
+        if key in COMBO:
+            current.add(key)
+        if all(k in current for k in COMBO):
+            on_hotkey()
+
+    def on_release(key):
+        if key in current:
+            current.remove(key)
+
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
+
+
 def main():
+    # Start hotkey listener in a separate thread
+    hotkey_thread = threading.Thread(target=start_hotkey_listener, daemon=True)
+    hotkey_thread.start()
+
     app = QApplication(sys.argv)
     tray_icon = QSystemTrayIcon(QIcon("icon.png"), app)
     menu = QMenu()

@@ -30,3 +30,8 @@ def get_gdrive_service():
             pickle.dump(creds, token)
     service = build('drive', 'v3', credentials=creds)
     return service
+
+def delete_token():
+    token_path = get_token_path()
+    if token_path.exists():
+        token_path.unlink()

@@ -1,6 +1,7 @@
 import os
 from googleapiclient.http import MediaFileUpload
 from auth import get_gdrive_service
+from settings import load_settings
 
 def get_drivebox_folder_id(service):
     query = (
@@ -41,9 +42,12 @@ def upload_file_to_drivebox(filepath):
         media_body=media,
         fields='id, webViewLink'
     ).execute()
-    service.permissions().create(
-        fileId=file['id'],
-        body={'type': 'anyone', 'role': 'reader'}
-    ).execute()
+    # Set sharing based on settings
+    settings = load_settings()
+    if settings.get("sharing", "anyone") == "anyone":
+        service.permissions().create(
+            fileId=file['id'],
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
     print(f"Uploaded! Shareable link: {file['webViewLink']}")
     return file['webViewLink']

@@ -1,11 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('credentials.json', '.')],
+    datas=[
+        ('credentials.json', '.'),
+        ('icon.png', '.'),
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -35,4 +37,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    **dict(onefile=True),
 )

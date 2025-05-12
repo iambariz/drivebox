@@ -6,6 +6,7 @@ from PyQt5.QtGui import QIcon
 from screenshot import take_screenshot
 from upload import upload_file_to_drivebox
 from settings import load_settings
+from utils import resource_path
 import pyperclip
 import os
 
@@ -81,7 +82,8 @@ def main():
 
     app = QApplication(sys.argv)
     options_window = OptionsWindow(hotkey_callback=update_hotkey)
-    tray_icon = QSystemTrayIcon(QIcon("icon.png"), app)
+    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
+    
     menu = QMenu()
     options_action = QAction("Options")
     options_action.triggered.connect(options_window.show)

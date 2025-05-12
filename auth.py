@@ -5,6 +5,7 @@ from pathlib import Path
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
+from utils import resource_path
 
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
@@ -36,9 +37,3 @@ def delete_token():
     token_path = get_token_path()
     if token_path.exists():
         token_path.unlink()
-
-def resource_path(filename):
-    """ Get absolute path to resource, works for dev and for PyInstaller """
-    if hasattr(sys, '_MEIPASS'):
-        return os.path.join(sys._MEIPASS, filename)
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), filename)

@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (
 )
 from settings import load_settings, save_settings
 from auth import get_gdrive_service, delete_token
+from .options_hotkey_recorder import HotkeyRecorderDialog
 
 def get_user_info(service):
     about = service.about().get(fields="user").execute()
@@ -107,14 +108,18 @@ class OptionsWindow(QDialog):
         save_settings(settings)
 
     def change_hotkey(self):
-        new_hotkey, ok = QInputDialog.getText(self, "Change Hotkey", "Enter new hotkey (e.g., Ctrl+Shift+S):")
-        if ok and new_hotkey:
-            settings = load_settings()
-            settings["hotkey"] = new_hotkey
-            save_settings(settings)
-            self.hotkey_field.setText(new_hotkey)
-            if self.hotkey_callback:
-                self.hotkey_callback(new_hotkey)
+        # Create and show the hotkey recorder dialog
+        dialog = HotkeyRecorderDialog(self)
+        if dialog.exec_():
+            new_hotkey = dialog.hotkey_result
+            if new_hotkey:
+                settings = load_settings()
+                settings["hotkey"] = new_hotkey
+                save_settings(settings)
+                self.hotkey_field.setText(new_hotkey)
+                if self.hotkey_callback:
+                    self.hotkey_callback(new_hotkey)
+
 
     def reset_hotkey(self):
         default_hotkey = "Ctrl+Alt+X"

@@ -83,7 +83,7 @@ def main():
     app = QApplication(sys.argv)
     options_window = OptionsWindow(hotkey_callback=update_hotkey)
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
-    
+
     menu = QMenu()
     options_action = QAction("Options")
     options_action.triggered.connect(options_window.show)

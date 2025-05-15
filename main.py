@@ -3,16 +3,16 @@ from threading import Thread
 from pynput import keyboard
 from PyQt5.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
 from PyQt5.QtGui import QIcon
-from screenshot import take_screenshot
 from upload import upload_file_to_drivebox
 from settings import load_settings
 from utils import resource_path
 import pyperclip
 import os
-
+from screenshot_utils import Screenshotter
 from ui.options_window import OptionsWindow
 
 hotkey_listener = None
+ss = Screenshotter()  # Instantiate your screenshot class
 
 def parse_hotkey(hotkey_str):
     keys = set()
@@ -29,7 +29,7 @@ def parse_hotkey(hotkey_str):
     return keys
 
 def take_and_upload():
-    filename = take_screenshot()
+    filename = ss.take_fullscreen()
     if filename and os.path.exists(filename):
         link = upload_file_to_drivebox(filename)
         pyperclip.copy(link)
@@ -37,6 +37,16 @@ def take_and_upload():
         print(f"Screenshot uploaded! Link copied to clipboard: {link}")
     else:
         print("Screenshot failed.")
+
+def take_region_and_upload():
+    filename = ss.take_region()
+    if filename and os.path.exists(filename):
+        link = upload_file_to_drivebox(filename)
+        pyperclip.copy(link)
+        os.remove(filename)
+        print(f"Region screenshot uploaded! Link copied to clipboard: {link}")
+    else:
+        print("Region screenshot failed.")
 
 def start_hotkey_listener(hotkey_str):
     global hotkey_listener
@@ -68,7 +78,6 @@ def on_hotkey():
 
 def update_hotkey(new_hotkey):
     print(f"Updating hotkey to: {new_hotkey}")
-    # Always start the listener in a new thread
     global hotkey_listener
     if hotkey_listener is not None:
         hotkey_listener.stop()
@@ -87,12 +96,19 @@ def main():
     menu = QMenu()
     options_action = QAction("Options")
     options_action.triggered.connect(options_window.show)
-    # screenshot_action = QAction("Take Screenshot")
-    # screenshot_action.triggered.connect(take_and_upload)
+
+    screenshot_action = QAction("Full Screen Screenshot")
+    screenshot_action.triggered.connect(take_and_upload)
+
+    region_action = QAction("Region Screenshot")
+    region_action.triggered.connect(take_region_and_upload)
+
     exit_action = QAction("Exit")
     exit_action.triggered.connect(app.quit)
+
     menu.addAction(options_action)
-    # menu.addAction(screenshot_action)
+    menu.addAction(screenshot_action)
+    menu.addAction(region_action)
     menu.addAction(exit_action)
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")

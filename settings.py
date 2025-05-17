@@ -5,6 +5,7 @@ SETTINGS_PATH = Path.home() / ".drivebox" / "settings.json"
 
 DEFAULT_SETTINGS = {
     "hotkey": "ctrl+alt+x",
+    "hotkey_region": "ctrl+alt+r",
     "sharing": "anyone",
     "user": None
 }

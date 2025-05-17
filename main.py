@@ -11,8 +11,9 @@ import os
 from screenshot_utils import Screenshotter
 from ui.options_window import OptionsWindow
 
-hotkey_listener = None
-ss = Screenshotter()  # Instantiate your screenshot class
+# Dictionary to track multiple hotkey listeners
+hotkey_listeners = {}
+ss = Screenshotter()
 
 def parse_hotkey(hotkey_str):
     keys = set()
@@ -48,9 +49,12 @@ def take_region_and_upload():
     else:
         print("Region screenshot failed.")
 
-def start_hotkey_listener(hotkey_str):
-    global hotkey_listener
-
+def start_hotkey_listener(hotkey_str, action_callback, listener_name):
+    global hotkey_listeners
+    
+    # Stop previous listener with this name if exists
+    stop_listener(listener_name)
+    
     COMBO = parse_hotkey(hotkey_str)
     current = set()
 
@@ -58,57 +62,59 @@ def start_hotkey_listener(hotkey_str):
         if key in COMBO:
             current.add(key)
         if all(k in current for k in COMBO):
-            on_hotkey()
+            action_callback()
 
     def on_release(key):
         if key in current:
             current.remove(key)
 
-    # Stop previous listener if running
-    if hotkey_listener is not None:
-        hotkey_listener.stop()
+    # Create and start new listener
+    listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+    hotkey_listeners[listener_name] = listener
+    listener.daemon = True
+    listener.start()
+    print(f"Started listener '{listener_name}' for hotkey: {hotkey_str}")
 
-    hotkey_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-    hotkey_listener.start()
-    hotkey_listener.join()  # Keeps the thread alive
+def stop_listener(listener_name):
+    global hotkey_listeners
+    if listener_name in hotkey_listeners:
+        hotkey_listeners[listener_name].stop()
+        del hotkey_listeners[listener_name]
+        print(f"Stopped listener: {listener_name}")
 
-def on_hotkey():
-    print("Hotkey pressed!")
-    take_and_upload()
-
-def update_hotkey(new_hotkey):
-    print(f"Updating hotkey to: {new_hotkey}")
-    global hotkey_listener
-    if hotkey_listener is not None:
-        hotkey_listener.stop()
-    Thread(target=start_hotkey_listener, args=(new_hotkey,), daemon=True).start()
+def update_hotkey(new_hotkey, action_callback=None, listener_name="default"):
+    print(f"Updating hotkey '{listener_name}' to: {new_hotkey}")
+    # If no specific action provided, use default
+    if action_callback is None:
+        action_callback = take_and_upload
+    
+    # Start in the main thread to avoid blocking with Thread.join()
+    start_hotkey_listener(new_hotkey, action_callback, listener_name)
 
 def main():
-    # Start hotkey listener in a background thread
+    # Load settings
     settings = load_settings()
-    hotkey = settings.get("hotkey", "Ctrl+Alt+X")
-    Thread(target=start_hotkey_listener, args=(hotkey,), daemon=True).start()
+    
+    # Start hotkey listeners
+    fullscreen_hotkey = settings.get("hotkey", "Ctrl+Alt+X")
+    region_hotkey = settings.get("hotkey_region", "Ctrl+Alt+R")
+    
+    # Start each listener with its own name and action
+    update_hotkey(fullscreen_hotkey, take_and_upload, "fullscreen")
+    update_hotkey(region_hotkey, take_region_and_upload, "region")
 
     app = QApplication(sys.argv)
-    options_window = OptionsWindow(hotkey_callback=update_hotkey)
+    options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, take_and_upload, "fullscreen"))
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
 
     menu = QMenu()
     options_action = QAction("Options")
     options_action.triggered.connect(options_window.show)
 
-    screenshot_action = QAction("Full Screen Screenshot")
-    screenshot_action.triggered.connect(take_and_upload)
-
-    region_action = QAction("Region Screenshot")
-    region_action.triggered.connect(take_region_and_upload)
-
     exit_action = QAction("Exit")
     exit_action.triggered.connect(app.quit)
 
     menu.addAction(options_action)
-    menu.addAction(screenshot_action)
-    menu.addAction(region_action)
     menu.addAction(exit_action)
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")

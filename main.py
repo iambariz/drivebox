@@ -11,6 +11,7 @@ import pyperclip
 import os
 from screenshot_utils import Screenshotter
 from ui.options_window import OptionsWindow
+from notifypy import Notify
 
 # Create a signal bridge to safely communicate between threads
 class HotkeyBridge(QObject):
@@ -37,15 +38,35 @@ def parse_hotkey(hotkey_str):
             keys.add(keyboard.KeyCode(char=part))
     return frozenset(keys)
 
+# Add a helper function for showing notifications
+def show_notification(title, message, icon_path=None):
+    """Show a desktop notification with the specified title and message"""
+    notification = Notify()
+    notification.title = title
+    notification.message = message
+    
+    # Use the app icon if none provided
+    if icon_path is None:
+        icon_path = resource_path("icon.png")
+    
+    notification.icon = icon_path
+    notification.send()
+
 def take_and_upload():
     filename = ss.take_fullscreen()
     if filename and os.path.exists(filename):
-        link = upload_file_to_drivebox(filename)
-        pyperclip.copy(link)
-        os.remove(filename)
-        print(f"Screenshot uploaded! Link copied to clipboard: {link}")
+        try:
+            link = upload_file_to_drivebox(filename)
+            pyperclip.copy(link)
+            os.remove(filename)
+            print(f"Screenshot uploaded! Link copied to clipboard: {link}")
+            show_notification("Screenshot Uploaded", "Link copied to clipboard")
+        except Exception as e:
+            print(f"Upload failed: {e}")
+            show_notification("Upload Failed", str(e))
     else:
         print("Screenshot failed.")
+        show_notification("Screenshot Failed", "Could not capture screenshot")
 
 def take_region_and_upload():
     global keyboard_listener
@@ -57,12 +78,18 @@ def take_region_and_upload():
     try:
         filename = ss.take_region()
         if filename and os.path.exists(filename):
-            link = upload_file_to_drivebox(filename)
-            pyperclip.copy(link)
-            os.remove(filename)
-            print(f"Region screenshot uploaded! Link copied to clipboard: {link}")
+            try:
+                link = upload_file_to_drivebox(filename)
+                pyperclip.copy(link)
+                os.remove(filename)
+                print(f"Region screenshot uploaded! Link copied to clipboard: {link}")
+                show_notification("Region Screenshot Uploaded", "Link copied to clipboard")
+            except Exception as e:
+                print(f"Upload failed: {e}")
+                show_notification("Upload Failed", str(e))
         else:
             print("Region screenshot failed.")
+            show_notification("Screenshot Failed", "Could not capture region screenshot")
     finally:
         # Restart the keyboard listener
         start_keyboard_listener()

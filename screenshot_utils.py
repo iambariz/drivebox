@@ -6,12 +6,18 @@ import os
 import sys
 import uuid
 import tempfile
+from datetime import datetime
 from region_selector import RegionSelector
 
 class Screenshotter:
     def __init__(self):
         self.app = QApplication.instance() or QApplication(sys.argv)
         self.temp_dir = tempfile.gettempdir()
+
+    def _get_formatted_filename(self, prefix=""):
+        """Generate a filename with current datetime in format YYYY-MM-DD-HH:MM:SS"""
+        timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
+        return os.path.join(self.temp_dir, f"{prefix}{timestamp}_screenshot.png")
 
     def select_region(self):
         selector = RegionSelector()
@@ -20,7 +26,10 @@ class Screenshotter:
             return rect.left(), rect.top(), rect.width(), rect.height()
         return None
 
-    def take_fullscreen(self, filename='screenshot.png'):
+    def take_fullscreen(self, filename=None):
+        if filename is None:
+            filename = self._get_formatted_filename("fullscreen_")
+
         screen = QGuiApplication.primaryScreen()
         screenshot = screen.grabWindow(0)
         screenshot.save(filename, 'png')
@@ -32,16 +41,16 @@ class Screenshotter:
         try:
             selector = RegionSelector()
             selector.showFullScreen()
-            
+
             result = selector.exec_()
             print(f"Selection result: {result}, Accepted value: {QDialog.Accepted}")
             print(f"Has selected rectangle: {selector.selected_rect is not None}")
-            
+
             if result == QDialog.Accepted and selector.selected_rect:
-                filename = os.path.join(self.temp_dir, f"screenshot_{uuid.uuid4()}.png")
+                filename = self._get_formatted_filename("region_")
                 print(f"Attempting to save to: {filename}")
                 screen = QApplication.primaryScreen()
-                
+
                 pixmap = screen.grabWindow(
                     0,
                     selector.selected_rect.x(),
@@ -57,6 +66,7 @@ class Screenshotter:
         except Exception as e:
             print(f"Error taking region screenshot: {e}")
         return None
+
     def take_all_screens(self):
         for i, screen in enumerate(QGuiApplication.screens()):
             screenshot = screen.grabWindow(0)

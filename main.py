@@ -53,7 +53,7 @@ def take_region_and_upload():
     if keyboard_listener:
         keyboard_listener.stop()
         keyboard_listener = None
-    
+
     try:
         filename = ss.take_region()
         if filename and os.path.exists(filename):
@@ -76,31 +76,31 @@ def setup_hotkey_connections():
 
 def start_keyboard_listener():
     global keyboard_listener, registered_hotkeys
-    
+
     if not registered_hotkeys:
         return
-    
+
     if keyboard_listener:
         try:
             keyboard_listener.stop()
         except:
             pass
-    
+
     current_keys = set()
-    
+
     def on_press(key):
         current_keys.add(key)
-        
+
         # Check each hotkey combination
         for keys_combo, (callback_name, _) in registered_hotkeys.items():
             if all(k in current_keys for k in keys_combo):
                 # Emit signal that will be safely received in the main thread
                 bridge.hotkey_activated.emit(callback_name)
-    
+
     def on_release(key):
         if key in current_keys:
             current_keys.remove(key)
-    
+
     keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     keyboard_listener.daemon = True
     keyboard_listener.start()
@@ -108,11 +108,11 @@ def start_keyboard_listener():
 
 def register_hotkey(hotkey_str, callback_name, hotkey_name):
     global registered_hotkeys
-    
+
     keys = parse_hotkey(hotkey_str)
     registered_hotkeys[keys] = (callback_name, hotkey_name)
     print(f"Registered hotkey '{hotkey_name}': {hotkey_str}")
-    
+
     start_keyboard_listener()
 
 def update_hotkey(new_hotkey, callback_name="fullscreen", hotkey_name="default"):
@@ -120,14 +120,14 @@ def update_hotkey(new_hotkey, callback_name="fullscreen", hotkey_name="default")
 
 def main():
     global app
-    
+
     # Create QApplication first
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
-    
+
     # Set up signal connections
     setup_hotkey_connections()
-    
+
     # Load settings
     settings = load_settings()
 
@@ -138,7 +138,7 @@ def main():
 
     # Clean up on exit
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
-    
+
     sys.exit(app.exec_())
 
 def create_menu():
@@ -147,7 +147,7 @@ def create_menu():
 
     # Create menu
     menu = create_menu_items()
-    
+
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")
     tray_icon.show()
@@ -165,7 +165,7 @@ def create_menu_items():
         ("Exit", app.quit)
     ]
 
-# Create and add all menu items in one go
+    # Create and add all menu items in one go
     for item in menu_items:
         if item is None:
             menu.addSeparator()

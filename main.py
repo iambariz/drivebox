@@ -130,29 +130,29 @@ def main():
     
     # Load settings
     settings = load_settings()
-    
-    # Register hotkeys
-    fullscreen_hotkey = settings.get("hotkey", "Ctrl+Alt+X")
-    region_hotkey = settings.get("hotkey_region", "Ctrl+Alt+R")
-    
-    register_hotkey(fullscreen_hotkey, "fullscreen", "fullscreen")
-    register_hotkey(region_hotkey, "region", "region")
 
-    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
+    register_hotkey(settings.get("hotkey", "Ctrl+Alt+X"), "fullscreen", "fullscreen")
+    register_hotkey(settings.get("hotkey_region", "Ctrl+Alt+R"), "region", "region")
 
-    # Create menu
-    menu = createMenu()
-    
-    tray_icon.setContextMenu(menu)
-    tray_icon.setToolTip("DriveBox")
-    tray_icon.show()
-    
+    create_menu()
+
     # Clean up on exit
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
     
     sys.exit(app.exec_())
 
-def createMenu():
+def create_menu():
+
+    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
+
+    # Create menu
+    menu = create_menu_items()
+    
+    tray_icon.setContextMenu(menu)
+    tray_icon.setToolTip("DriveBox")
+    tray_icon.show()
+
+def create_menu_items():
     menu = QMenu()
     options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
 

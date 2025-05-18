@@ -138,30 +138,10 @@ def main():
     register_hotkey(fullscreen_hotkey, "fullscreen", "fullscreen")
     register_hotkey(region_hotkey, "region", "region")
 
-    options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
 
     # Create menu
-    menu = QMenu()
-    
-    fullscreen_action = QAction("Take Fullscreen Screenshot")
-    fullscreen_action.triggered.connect(take_and_upload)
-    
-    region_action = QAction("Take Region Screenshot")
-    region_action.triggered.connect(take_region_and_upload)
-    
-    options_action = QAction("Options")
-    options_action.triggered.connect(options_window.show)
-
-    exit_action = QAction("Exit")
-    exit_action.triggered.connect(app.quit)
-
-    menu.addAction(fullscreen_action)
-    menu.addAction(region_action)
-    menu.addSeparator()
-    menu.addAction(options_action)
-    menu.addSeparator()
-    menu.addAction(exit_action)
+    menu = createMenu()
     
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")
@@ -171,6 +151,30 @@ def main():
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
     
     sys.exit(app.exec_())
+
+def createMenu():
+    menu = QMenu()
+    options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
+
+    menu_items = [
+        ("Take Fullscreen Screenshot", take_and_upload),
+        ("Take Region Screenshot", take_region_and_upload),
+        None,  # separator
+        ("Options", options_window.show),
+        None,  # separator
+        ("Exit", app.quit)
+    ]
+
+# Create and add all menu items in one go
+    for item in menu_items:
+        if item is None:
+            menu.addSeparator()
+        else:
+            text, callback = item
+            action = QAction(text)
+            action.triggered.connect(callback)
+            menu.addAction(action)
+    return menu
 
 if __name__ == "__main__":
     main()

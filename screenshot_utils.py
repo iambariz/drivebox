@@ -34,8 +34,12 @@ class Screenshotter:
             selector.showFullScreen()
             
             result = selector.exec_()
+            print(f"Selection result: {result}, Accepted value: {QDialog.Accepted}")
+            print(f"Has selected rectangle: {selector.selected_rect is not None}")
+            
             if result == QDialog.Accepted and selector.selected_rect:
                 filename = os.path.join(self.temp_dir, f"screenshot_{uuid.uuid4()}.png")
+                print(f"Attempting to save to: {filename}")
                 screen = QApplication.primaryScreen()
                 
                 pixmap = screen.grabWindow(
@@ -45,12 +49,14 @@ class Screenshotter:
                     selector.selected_rect.width(),
                     selector.selected_rect.height()
                 )
-                pixmap.save(filename)
+                saved = pixmap.save(filename)
+                print(f"Save successful: {saved}")
                 return filename
+            else:
+                print("Selection was cancelled or no region was selected")
         except Exception as e:
             print(f"Error taking region screenshot: {e}")
         return None
-
     def take_all_screens(self):
         for i, screen in enumerate(QGuiApplication.screens()):
             screenshot = screen.grabWindow(0)

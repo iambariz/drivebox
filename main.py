@@ -23,6 +23,7 @@ ss = Screenshotter()
 registered_hotkeys = {}
 app = None
 bridge = HotkeyBridge()
+options_window = None  # Make options_window global to prevent garbage collection
 
 def parse_hotkey(hotkey_str):
     keys = set()
@@ -146,7 +147,7 @@ def update_hotkey(new_hotkey, callback_name="fullscreen", hotkey_name="default")
     register_hotkey(new_hotkey, callback_name, hotkey_name)
 
 def main():
-    global app
+    global app, options_window
 
     # Create QApplication first
     app = QApplication(sys.argv)
@@ -161,20 +162,48 @@ def main():
     register_hotkey(settings.get("hotkey", "Ctrl+Alt+X"), "fullscreen", "fullscreen")
     register_hotkey(settings.get("hotkey_region", "Ctrl+Alt+R"), "region", "region")
 
-    create_menu()
+
+    # ...existing code...
+    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
+    
+    menu = QMenu()
+    options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
+
+    # Create actions individually instead of using a loop
+    fullscreen_action = QAction("Take Fullscreen Screenshot")
+    fullscreen_action.triggered.connect(take_and_upload)
+    menu.addAction(fullscreen_action)
+    
+    region_action = QAction("Take Region Screenshot")
+    region_action.triggered.connect(take_region_and_upload)
+    menu.addAction(region_action)
+    
+    menu.addSeparator()
+    
+    options_action = QAction("Options")
+    options_action.triggered.connect(options_window.show)
+    menu.addAction(options_action)
+    
+    menu.addSeparator()
+    
+    exit_action = QAction("Exit")
+    exit_action.triggered.connect(app.quit)
+    menu.addAction(exit_action)
+
+    tray_icon.setContextMenu(menu)
+    tray_icon.setToolTip("DriveBox")
+    tray_icon.show()
 
     # Clean up on exit
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
 
     sys.exit(app.exec_())
 
+# These functions are no longer used and can be removed
 def create_menu():
-
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
-
     # Create menu
     menu = create_menu_items()
-
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")
     tray_icon.show()
@@ -182,7 +211,6 @@ def create_menu():
 def create_menu_items():
     menu = QMenu()
     options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
-
     menu_items = [
         ("Take Fullscreen Screenshot", take_and_upload),
         ("Take Region Screenshot", take_region_and_upload),
@@ -191,7 +219,6 @@ def create_menu_items():
         None,  # separator
         ("Exit", app.quit)
     ]
-
     # Create and add all menu items in one go
     for item in menu_items:
         if item is None:

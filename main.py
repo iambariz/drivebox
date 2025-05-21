@@ -147,8 +147,8 @@ def update_hotkey(new_hotkey, callback_name="fullscreen", hotkey_name="default")
     register_hotkey(new_hotkey, callback_name, hotkey_name)
 
 def main():
-    global app, options_window
-
+    global app, options_window, action_references
+    
     # Create QApplication first
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
@@ -162,33 +162,36 @@ def main():
     register_hotkey(settings.get("hotkey", "Ctrl+Alt+X"), "fullscreen", "fullscreen")
     register_hotkey(settings.get("hotkey_region", "Ctrl+Alt+R"), "region", "region")
 
-
-    # ...existing code...
+    # Create system tray icon
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
-    
+
     menu = QMenu()
     options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
 
-    # Create actions individually instead of using a loop
-    fullscreen_action = QAction("Take Fullscreen Screenshot")
-    fullscreen_action.triggered.connect(take_and_upload)
-    menu.addAction(fullscreen_action)
-    
-    region_action = QAction("Take Region Screenshot")
-    region_action.triggered.connect(take_region_and_upload)
-    menu.addAction(region_action)
-    
-    menu.addSeparator()
-    
-    options_action = QAction("Options")
-    options_action.triggered.connect(options_window.show)
-    menu.addAction(options_action)
-    
-    menu.addSeparator()
-    
-    exit_action = QAction("Exit")
-    exit_action.triggered.connect(app.quit)
-    menu.addAction(exit_action)
+    # Define menu items
+    menu_items = [
+        ("Take Fullscreen Screenshot", take_and_upload),
+        ("Take Region Screenshot", take_region_and_upload),
+        None,  # separator
+        ("Options", options_window.show),
+        None,  # separator
+        ("Exit", app.quit)
+    ]
+
+    # Store references to all created actions to prevent garbage collection
+    action_references = []
+
+    # Create menu items
+    for item in menu_items:
+        if item is None:
+            menu.addSeparator()
+        else:
+            text, callback = item
+            action = QAction(text)
+            action.triggered.connect(callback)
+            menu.addAction(action)
+            # Keep a reference to the action
+            action_references.append(action)
 
     tray_icon.setContextMenu(menu)
     tray_icon.setToolTip("DriveBox")
@@ -198,37 +201,6 @@ def main():
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
 
     sys.exit(app.exec_())
-
-# These functions are no longer used and can be removed
-def create_menu():
-    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
-    # Create menu
-    menu = create_menu_items()
-    tray_icon.setContextMenu(menu)
-    tray_icon.setToolTip("DriveBox")
-    tray_icon.show()
-
-def create_menu_items():
-    menu = QMenu()
-    options_window = OptionsWindow(hotkey_callback=lambda new_hotkey: update_hotkey(new_hotkey, "fullscreen", "fullscreen"))
-    menu_items = [
-        ("Take Fullscreen Screenshot", take_and_upload),
-        ("Take Region Screenshot", take_region_and_upload),
-        None,  # separator
-        ("Options", options_window.show),
-        None,  # separator
-        ("Exit", app.quit)
-    ]
-    # Create and add all menu items in one go
-    for item in menu_items:
-        if item is None:
-            menu.addSeparator()
-        else:
-            text, callback = item
-            action = QAction(text)
-            action.triggered.connect(callback)
-            menu.addAction(action)
-    return menu
 
 if __name__ == "__main__":
     main()

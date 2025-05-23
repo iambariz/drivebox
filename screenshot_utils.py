@@ -1,21 +1,15 @@
-# screenshot.py
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import QGuiApplication
-from PyQt5.QtWidgets import QApplication, QDialog
+import mss
+import mss.tools
 import os
-import sys
-import uuid
 import tempfile
 from datetime import datetime
 from region_selector import RegionSelector
 
 class Screenshotter:
     def __init__(self):
-        self.app = QApplication.instance() or QApplication(sys.argv)
         self.temp_dir = tempfile.gettempdir()
 
     def _get_formatted_filename(self, prefix=""):
-        """Generate a filename with current datetime in format YYYY-MM-DD-HH:MM:SS"""
         timestamp = datetime.now().strftime("%Y-%m-%d-%H:%M:%S")
         return os.path.join(self.temp_dir, f"{prefix}{timestamp}_screenshot.png")
 
@@ -26,56 +20,37 @@ class Screenshotter:
             return rect.left(), rect.top(), rect.width(), rect.height()
         return None
 
-    def take_fullscreen(self, filename=None):
-        if filename is None:
-            filename = self._get_formatted_filename("fullscreen_")
-
-        screen = QGuiApplication.primaryScreen()
-        screenshot = screen.grabWindow(0)
-        screenshot.save(filename, 'png')
-        print(f"Screenshot saved as {filename}")
-        return filename
+    def take_fullscreen(self):
+        """Take a screenshot of the primary monitor using mss."""
+        with mss.mss() as sct:
+            monitor = sct.monitors[1]  # 1 = primary monitor
+            output = self._get_formatted_filename("fullscreen_")
+            sct_img = sct.grab(monitor)
+            mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
+            print(f"Screenshot saved as {output}")
+            return output
 
     def take_region(self):
-        """Take a screenshot of a selected region"""
-        try:
-            selector = RegionSelector()
-            selector.showFullScreen()
-
-            result = selector.exec_()
-            print(f"Selection result: {result}, Accepted value: {QDialog.Accepted}")
-            print(f"Has selected rectangle: {selector.selected_rect is not None}")
-
-            if result == QDialog.Accepted and selector.selected_rect:
-                filename = self._get_formatted_filename("region_")
-                print(f"Attempting to save to: {filename}")
-                screen = QApplication.primaryScreen()
-
-                pixmap = screen.grabWindow(
-                    0,
-                    selector.selected_rect.x(),
-                    selector.selected_rect.y(),
-                    selector.selected_rect.width(),
-                    selector.selected_rect.height()
-                )
-                saved = pixmap.save(filename)
-                print(f"Save successful: {saved}")
-                return filename
-            else:
-                print("Selection was cancelled or no region was selected")
-        except Exception as e:
-            print(f"Error taking region screenshot: {e}")
-        return None
-
-    def take_all_screens(self):
-        for i, screen in enumerate(QGuiApplication.screens()):
-            screenshot = screen.grabWindow(0)
-            filename = f"screenshot_screen_{i+1}.png"
-            screenshot.save(filename, 'png')
-            print(f"Screenshot saved as {filename}")
+        """Take a screenshot of a user-selected region using mss."""
+        region = self.select_region()
+        if region:
+            left, top, width, height = region
+            monitor = {
+                "left": left,
+                "top": top,
+                "width": width,
+                "height": height
+            }
+            output = self._get_formatted_filename("region_")
+            with mss.mss() as sct:
+                sct_img = sct.grab(monitor)
+                mss.tools.to_png(sct_img.rgb, sct_img.size, output=output)
+                print(f"Screenshot saved as {output}")
+                return output
+        else:
+            print("No region selected")
+            return None
 
 if __name__ == "__main__":
     ss = Screenshotter()
-    ss.take_fullscreen()
-    ss.take_region()
-    # ss.take_all_screens()
+    ss.take_region_with_mss()

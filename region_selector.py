@@ -19,6 +19,9 @@ class RegionSelector(QDialog):
         # Set cursor
         self.setCursor(Qt.CrossCursor)
 
+        # Make the dialog cover the whole screen
+        self.showFullScreen()
+
     def mousePressEvent(self, event):
         self.start = event.pos()
         self.end = self.start

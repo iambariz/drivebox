@@ -12,6 +12,8 @@ import os
 from screenshot_utils import Screenshotter
 from ui.options_window import OptionsWindow
 from notifypy import Notify
+from screen_recorder import ScreenRecorder
+from recording_worker import RecordingStopper
 
 # Create a signal bridge to safely communicate between threads
 class HotkeyBridge(QObject):
@@ -24,6 +26,8 @@ registered_hotkeys = {}
 app = None
 bridge = HotkeyBridge()
 options_window = None  # Make options_window global to prevent garbage collection
+recorder = ScreenRecorder()
+active_threads = []
 
 def parse_hotkey(hotkey_str):
     keys = set()
@@ -99,8 +103,11 @@ def take_region_and_upload():
 def setup_hotkey_connections():
     bridge.hotkey_activated.connect(lambda hotkey_name: {
         'fullscreen': take_and_upload,
-        'region': take_region_and_upload
+        'region': take_region_and_upload,
+        'record_start': start_screen_recording,
+        'record_stop': stop_screen_recording_and_upload
     }.get(hotkey_name, lambda: None)())
+
 
 def start_keyboard_listener():
     global keyboard_listener, registered_hotkeys
@@ -161,6 +168,8 @@ def main():
 
     register_hotkey(settings.get("hotkey", "Ctrl+Alt+X"), "fullscreen", "fullscreen")
     register_hotkey(settings.get("hotkey_region", "Ctrl+Alt+R"), "region", "region")
+    register_hotkey(settings.get("hotkey_record_start", "Ctrl+Alt+S"), "record_start", "record_start")
+    register_hotkey(settings.get("hotkey_record_stop", "Ctrl+Alt+E"), "record_stop", "record_stop")
 
     # Create system tray icon
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
@@ -172,6 +181,9 @@ def main():
     menu_items = [
         ("Take Fullscreen Screenshot", take_and_upload),
         ("Take Region Screenshot", take_region_and_upload),
+        None,  # separator
+        ("Start Screen Recording", start_screen_recording),
+        ("Stop & Upload Recording", stop_screen_recording_and_upload),
         None,  # separator
         ("Options", options_window.show),
         None,  # separator
@@ -201,6 +213,31 @@ def main():
     app.aboutToQuit.connect(lambda: keyboard_listener.stop() if keyboard_listener else None)
 
     sys.exit(app.exec_())
+
+def start_screen_recording():
+    try:
+        recorder.start_recording()
+        show_notification("Screen Recording", "Recording started")
+        print("Screen recording started.")
+    except Exception as e:
+        print(f"Failed to start recording: {e}")
+        show_notification("Screen Recording Failed", str(e))
+
+def stop_screen_recording_and_upload():
+    stopper = RecordingStopper(recorder, upload_file_to_drivebox)
+    stopper.finished.connect(handle_recording_finished)
+    active_threads.append(stopper)
+    stopper.finished.connect(lambda *_: active_threads.remove(stopper))
+    stopper.start()
+
+def handle_recording_finished(link, error_message):
+    if link:
+        pyperclip.copy(link)
+        print(f"Recording uploaded! Link copied to clipboard: {link}")
+        show_notification("Recording Uploaded", "Link copied to clipboard")
+    else:
+        print(f"Recording upload failed: {error_message}")
+        show_notification("Recording Failed", error_message)
 
 if __name__ == "__main__":
     main()

@@ -155,7 +155,7 @@ def update_hotkey(new_hotkey, callback_name="fullscreen", hotkey_name="default")
 
 def main():
     global app, options_window, action_references
-    
+
     # Create QApplication first
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)

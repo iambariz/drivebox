@@ -24,3 +24,6 @@ notes.txt
 
 # Build files
 build/
+
+# Distribution files
+dist/

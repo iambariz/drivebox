@@ -2,7 +2,7 @@ name: Build and Release
 
 on:
   push:
-    branches: [ main ]   # build artifacts on every push
+    branches: [ master ]   # build artifacts on every push
   release:
     types: [created]     # special actions only on release
 

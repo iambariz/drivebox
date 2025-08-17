@@ -5,7 +5,8 @@ from pathlib import Path
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from google.auth.transport.requests import Request
-from utils import resource_path
+
+from drivebox.utils import resource_path
 
 SCOPES = ['https://www.googleapis.com/auth/drive.file']
 

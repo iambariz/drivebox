@@ -1,9 +1,17 @@
 from PyQt5.QtWidgets import (
-    QDialog, QVBoxLayout, QLabel, QPushButton, QComboBox, QLineEdit, QHBoxLayout, QInputDialog
+    QDialog,
+    QVBoxLayout,
+    QLabel,
+    QPushButton,
+    QComboBox,
+    QLineEdit,
+    QHBoxLayout,
+    QInputDialog,
 )
-from settings import load_settings, save_settings
-from auth import get_gdrive_service, delete_token
-from .options_hotkey_recorder import HotkeyRecorderDialog
+
+from drivebox.settings import load_settings, save_settings
+from drivebox.auth import get_gdrive_service, delete_token
+from drivebox.ui.options_hotkey_recorder import HotkeyRecorderDialog
 
 def get_user_info(service):
     about = service.about().get(fields="user").execute()

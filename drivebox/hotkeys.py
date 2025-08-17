@@ -1,4 +1,3 @@
-# hotkeys.py
 from pynput import keyboard
 
 class HotkeyManager:

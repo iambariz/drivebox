@@ -1,6 +1,5 @@
-# notifications.py
 from notifypy import Notify
-from utils import resource_path
+from drivebox.utils import resource_path
 
 class Notifier:
     def __init__(self, default_icon="icon.png"):

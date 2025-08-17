@@ -1,7 +1,6 @@
-# recording.py
 import pyperclip
-from screen_recorder import ScreenRecorder
-from recording_worker import RecordingStopper
+from drivebox.screen_recorder import ScreenRecorder
+from drivebox.recording_worker import RecordingStopper
 
 class RecordingService:
     def __init__(self, notifier, upload_func):

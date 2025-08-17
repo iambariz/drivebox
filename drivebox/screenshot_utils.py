@@ -3,7 +3,7 @@ import mss.tools
 import os
 import tempfile
 from datetime import datetime
-from region_selector import RegionSelector
+from drivebox.region_selector import RegionSelector
 
 class Screenshotter:
     def __init__(self):

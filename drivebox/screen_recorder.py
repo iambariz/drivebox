@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import os
 from datetime import datetime
-from utils import resource_path
+from drivebox.utils import resource_path
 
 class ScreenRecorder:
     def __init__(self):

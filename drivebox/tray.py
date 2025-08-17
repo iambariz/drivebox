@@ -1,7 +1,6 @@
-# tray.py
 from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction
 from PyQt5.QtGui import QIcon
-from utils import resource_path
+from drivebox.utils import resource_path
 
 def create_tray_menu(app, options_window, screenshot_service, recording_service):
     tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)

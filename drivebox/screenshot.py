@@ -1,8 +1,7 @@
-# screenshots.py
 import os
 import pyperclip
-from upload import upload_file_to_drivebox
-from screenshot_utils import Screenshotter
+from drivebox.upload import upload_file_to_drivebox
+from drivebox.screenshot_utils import Screenshotter
 
 class ScreenshotService:
     def __init__(self, notifier):

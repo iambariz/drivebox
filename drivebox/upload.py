@@ -1,7 +1,7 @@
 import os
 from googleapiclient.http import MediaFileUpload
-from auth import get_gdrive_service
-from settings import load_settings
+from drivebox.auth import get_gdrive_service
+from drivebox.settings import load_settings
 
 def get_drivebox_folder_id(service):
     query = (

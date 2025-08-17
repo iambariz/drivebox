@@ -1,15 +1,15 @@
-# main.py
 import sys
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QObject, pyqtSignal
-from settings import load_settings
-from ui.options_window import OptionsWindow
-from hotkeys import HotkeyManager
-from notification import Notifier
-from screenshot import ScreenshotService
-from recording import RecordingService
-from tray import create_tray_menu
-from upload import upload_file_to_drivebox
+
+from drivebox.settings import load_settings
+from drivebox.ui.options_window import OptionsWindow
+from drivebox.hotkeys import HotkeyManager
+from drivebox.notification import Notifier
+from drivebox.screenshot import ScreenshotService
+from drivebox.recording import RecordingService
+from drivebox.tray import create_tray_menu
+from drivebox.upload import upload_file_to_drivebox
 
 # Signal bridge for thread-safe hotkey communication
 class HotkeyBridge(QObject):

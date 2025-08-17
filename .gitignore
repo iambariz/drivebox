@@ -29,7 +29,8 @@ build/
 dist/
 
 # Resources
-resources/ffmpeg/   #don’t commit ffmpeg binaries
+# Ignore ffmpeg binaries
+drivebox/resources/ffmpeg/
 
 # Packaging metadata
 *.egg-info/

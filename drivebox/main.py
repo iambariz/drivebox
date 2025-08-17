@@ -5,8 +5,8 @@ from PyQt5.QtCore import QObject, pyqtSignal
 from drivebox.settings import load_settings
 from drivebox.ui.options_window import OptionsWindow
 from drivebox.hotkeys import HotkeyManager
-from drivebox.notification import Notifier
-from drivebox.screenshot import ScreenshotService
+from drivebox.notifications import Notifier
+from drivebox.screenshots import ScreenshotService
 from drivebox.recording import RecordingService
 from drivebox.tray import create_tray_menu
 from drivebox.upload import upload_file_to_drivebox

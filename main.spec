@@ -5,9 +5,10 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ('drivebox/resources/*', 'drivebox/resources'),
+        ('drivebox/resources/ffmpeg/*', 'drivebox/resources/ffmpeg'),
+        ('drivebox/resources/icon.png', 'drivebox/resources'),
         ('credentials.json', '.'),
-    ],
+    ]
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

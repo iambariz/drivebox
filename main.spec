@@ -1,14 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+block_cipher = None
+
 a = Analysis(
-    ['main.py'],
+    ['drivebox/main.py'],   # entry point
     pathex=[],
     binaries=[],
     datas=[
-        ('drivebox/resources/ffmpeg/*', 'drivebox/resources/ffmpeg'),
-        ('drivebox/resources/icon.png', 'drivebox/resources'),
-        ('credentials.json', '.'),
-    ]
+    ('drivebox/resources/icon.png', 'resources'),
+    ('drivebox/resources/ffmpeg/*', 'resources/ffmpeg'),
+    ('credentials.json', '.'),   #only for dev builds - Todo: Change it before release
+    ],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -16,16 +18,17 @@ a = Analysis(
     excludes=[],
     noarchive=False,
     optimize=0,
+    cipher=block_cipher,
 )
-pyz = PYZ(a.pure)
+
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(
     pyz,
     a.scripts,
-    a.binaries,
-    a.datas,
     [],
-    name='main',
+    exclude_binaries=True,
+    name='drivebox',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -38,5 +41,15 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    **dict(onefile=True),
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='drivebox'   #folder name inside dist/
 )

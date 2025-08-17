@@ -13,7 +13,8 @@ class ScreenshotService:
             try:
                 link = upload_file_to_drivebox(filename)
                 pyperclip.copy(link)
-                os.remove(filename)
+                if os.path.exists(filename):
+                    os.remove(filename)
                 print(f"{success_title}! Link copied to clipboard: {link}")
                 self.notifier.notify(success_title, "Link copied to clipboard")
             except Exception as e:

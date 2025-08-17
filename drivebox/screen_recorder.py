@@ -1,6 +1,7 @@
 import sys
 import subprocess
 import tempfile
+import stat
 import os
 from datetime import datetime
 from drivebox.utils import resource_path
@@ -16,27 +17,30 @@ class ScreenRecorder:
         return os.path.join(temp_dir, f"screen_record_{timestamp}.mp4")
         
     def _get_ffmpeg_path(self):
-        """Get path to bundled FFmpeg binary"""
-        # Try resources folder first
-        ffmpeg_path = resource_path(os.path.join("resources", "ffmpeg", "ffmpeg"))
+        """Get path to bundled or system FFmpeg binary."""
+
+        exe_name = "ffmpeg.exe" if sys.platform.startswith("win") else "ffmpeg"
+
+        def make_executable(path):
+            """Ensure ffmpeg is executable on Linux/Mac."""
+            if not sys.platform.startswith("win") and os.path.exists(path):
+                os.chmod(path, os.stat(path).st_mode | stat.S_IXUSR)
+
+        # 1. Try bundled resources (PyInstaller or dev resources/)
+        ffmpeg_path = resource_path(os.path.join("resources", "ffmpeg", exe_name))
         if os.path.exists(ffmpeg_path):
-            # Make it executable on Linux/Mac
-            if not sys.platform.startswith("win"):
-                import stat
-                os.chmod(ffmpeg_path, os.stat(ffmpeg_path).st_mode | stat.S_IXUSR)
+            make_executable(ffmpeg_path)
             return ffmpeg_path
-            
-        # Try the extracted folder in project root
+
+        # 2. Try local extracted folder (dev mode)
         project_dir = os.path.dirname(os.path.abspath(__file__))
-        ffmpeg_path = os.path.join(project_dir, "ffmpeg-7.0.2-amd64-static", "ffmpeg")
+        ffmpeg_path = os.path.join(project_dir, "ffmpeg-7.0.2-amd64-static", exe_name)
         if os.path.exists(ffmpeg_path):
-            if not sys.platform.startswith("win"):
-                import stat
-                os.chmod(ffmpeg_path, os.stat(ffmpeg_path).st_mode | stat.S_IXUSR)
+            make_executable(ffmpeg_path)
             return ffmpeg_path
-            
-        # Fall back to system command
-        return "ffmpeg"
+
+        # 3. Fall back to system ffmpeg
+        return exe_name
 
     def start_recording(self):
         self.output_file = self._get_output_filename()

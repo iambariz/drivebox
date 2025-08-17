@@ -3,7 +3,7 @@ from PyQt5.QtGui import QIcon
 from drivebox.utils import resource_path
 
 def create_tray_menu(app, options_window, screenshot_service, recording_service):
-    tray_icon = QSystemTrayIcon(QIcon(resource_path("icon.png")), app)
+    tray_icon = QSystemTrayIcon(QIcon(resource_path("resources/icon.png")), app)
 
     menu = QMenu()
 

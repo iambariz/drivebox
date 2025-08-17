@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drivebox"
+version = "0.1.0"
+description = "A screenshot and screen recording app with hotkeys and cloud upload"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "PyQt5",
+    "pynput",
+    "notifypy",
+    "pyperclip"
+]
+
+[project.scripts]
+drivebox = "drivebox.main:main"
+
+[tool.setuptools]
+packages = ["drivebox"]

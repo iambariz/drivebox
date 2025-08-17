@@ -27,3 +27,6 @@ build/
 
 # Distribution files
 dist/
+
+# Resources
+resources/ffmpeg/   #don’t commit ffmpeg binaries

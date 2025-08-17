@@ -30,3 +30,8 @@ dist/
 
 # Resources
 resources/ffmpeg/   #don’t commit ffmpeg binaries
+
+# Packaging metadata
+*.egg-info/
+*.egg
+*.whl

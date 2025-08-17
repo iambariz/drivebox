@@ -12,8 +12,15 @@ requires-python = ">=3.9"
 dependencies = [
     "PyQt5",
     "pynput",
-    "notifypy",
-    "pyperclip"
+    "pyperclip",
+    "mss",
+    "pillow",
+    "notify-py",
+    "pystray",
+    "loguru",
+    "requests",
+    "google-api-python-client",
+    "google-auth-oauthlib"
 ]
 
 [project.scripts]

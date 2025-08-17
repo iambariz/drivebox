@@ -5,8 +5,8 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
+        ('drivebox/resources/*', 'drivebox/resources'),
         ('credentials.json', '.'),
-        ('icon.png', '.'),
     ],
     hiddenimports=[],
     hookspath=[],

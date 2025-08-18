@@ -6,7 +6,7 @@ def test_start_and_stop_recording(tmp_path):
     fake_process = MagicMock()
     fake_process.wait.return_value = 0
 
-    with patch("subprocess.Popen", return_value=fake_process):
+    with patch("drivebox.screen_recorder.subprocess.Popen", return_value=fake_process):
         recorder.start_recording()
         assert recorder.process is not None
 

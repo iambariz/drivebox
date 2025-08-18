@@ -9,7 +9,6 @@ a = Analysis(
     datas=[
     ('drivebox/resources/icon.png', 'resources'),
     ('drivebox/resources/ffmpeg/*', 'resources/ffmpeg'),
-    ('credentials.json', '.'),   #only for dev builds - Todo: Change it before release
     ],
     hiddenimports=[],
     hookspath=[],

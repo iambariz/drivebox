@@ -6,9 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "drivebox"
 version = "0.1.0"
 description = "A screenshot and screen recording app with hotkeys and cloud upload"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "David Barkanyi", email = "dmbarkanyi@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.9"
+
 dependencies = [
     "PyQt5",
     "pynput",
@@ -20,7 +21,17 @@ dependencies = [
     "loguru",
     "requests",
     "google-api-python-client",
-    "google-auth-oauthlib"
+    "google-auth-oauthlib",
+    "keyring"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-qt",
+    "pyinstaller",
+    "coverage"
 ]
 
 [project.scripts]

@@ -4,15 +4,31 @@ import os, sys, types
 if os.environ.get("CI") == "true":
     sys.modules['pynput'] = types.ModuleType("pynput")
     sys.modules['pynput.keyboard'] = types.ModuleType("pynput.keyboard")
-    sys.modules['pynput.keyboard'].Key = object
-    sys.modules['pynput.keyboard'].KeyCode = lambda char=None: char
+
+    class FakeKey:
+        ctrl_l = "ctrl_l"
+        alt_l = "alt_l"
+        shift_l = "shift_l"
+
+    class FakeKeyCode:
+        def __init__(self, char=None):
+            self.char = char
+
+        @staticmethod
+        def from_char(char):
+            return FakeKeyCode(char)
+
+    sys.modules['pynput.keyboard'].Key = FakeKey
+    sys.modules['pynput.keyboard'].KeyCode = FakeKeyCode
 
 import pytest
 from PyQt5.QtCore import QObject, pyqtSignal
 from drivebox.hotkeys import HotkeyManager
 
+
 class DummyBridge(QObject):
     hotkey_activated = pyqtSignal(str)
+
 
 def test_register_hotkey_and_emit(qtbot):
     bridge = DummyBridge()

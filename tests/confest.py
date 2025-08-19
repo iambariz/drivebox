@@ -1,7 +1,11 @@
+# tests/conftest.py
 import os, sys, types
 
-# Only mock in CI (headless)
 if os.environ.get("CI") == "true":
+    # Remove real pynput if already imported
+    sys.modules.pop("pynput", None)
+    sys.modules.pop("pynput.keyboard", None)
+
     sys.modules['pynput'] = types.ModuleType("pynput")
     sys.modules['pynput.keyboard'] = types.ModuleType("pynput.keyboard")
 

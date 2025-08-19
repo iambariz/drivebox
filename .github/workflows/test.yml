@@ -26,4 +26,5 @@ jobs:
       - name: Run tests with Xvfb
         run: xvfb-run -a pytest -v --maxfail=1 --disable-warnings
         env:
+          CI: "true"
           QT_QPA_PLATFORM: offscreen

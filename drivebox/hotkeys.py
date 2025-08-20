@@ -1,5 +1,3 @@
-from pynput import keyboard
-
 class HotkeyManager:
     def __init__(self, bridge):
         self.registered_hotkeys = {}
@@ -7,6 +5,7 @@ class HotkeyManager:
         self.bridge = bridge
 
     def parse_hotkey(self, hotkey_str):
+        from pynput import keyboard
         keys = set()
         for part in hotkey_str.lower().split('+'):
             part = part.strip()

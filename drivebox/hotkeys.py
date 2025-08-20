@@ -27,6 +27,7 @@ class HotkeyManager:
         self.start_listener()
 
     def start_listener(self):
+        from pynput import keyboard
         if not self.registered_hotkeys:
             return
 

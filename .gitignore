@@ -36,3 +36,4 @@ drivebox/resources/ffmpeg/
 *.egg-info/
 *.egg
 *.whl
+.coverage

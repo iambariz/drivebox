@@ -105,9 +105,9 @@ def test_start_listener_no_hotkeys(monkeypatch):
     def fake_listener(*args, **kwargs):
         called["listener"] = True
 
-    import pynput.keyboard
-    monkeypatch.setattr(pynput.keyboard, "Listener", fake_listener)
-
+    import sys
+    keyboard_module = sys.modules["pynput.keyboard"]
+    monkeypatch.setattr(keyboard_module, "Listener", FakeListener)
     manager.start_listener()
     assert called["listener"] is False
 

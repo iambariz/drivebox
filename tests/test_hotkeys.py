@@ -4,7 +4,7 @@ import os, sys, types
 if os.environ.get("CI") == "true":
     sys.modules['pynput'] = types.ModuleType("pynput")
     sys.modules['pynput.keyboard'] = types.ModuleType("pynput.keyboard")
-
+	sys.modules['pynput'].keyboard = sys.modules['pynput.keyboard']
     class FakeKey:
         ctrl_l = "ctrl_l"
         alt_l = "alt_l"

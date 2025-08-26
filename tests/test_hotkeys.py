@@ -105,11 +105,11 @@ def test_start_listener_no_hotkeys(monkeypatch):
     def fake_listener(*args, **kwargs):
         called["listener"] = True
 
-    monkeypatch.setattr("pynput.keyboard.Listener", fake_listener)
+    import pynput.keyboard
+    monkeypatch.setattr(pynput.keyboard, "Listener", fake_listener)
 
     manager.start_listener()
     assert called["listener"] is False
-
 
 def test_start_listener_with_hotkey(monkeypatch, qtbot):
     """start_listener should emit signal when hotkey pressed"""

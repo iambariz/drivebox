@@ -37,3 +37,6 @@ drivebox/resources/ffmpeg/
 *.egg
 *.whl
 .coverage
+
+#Tox 
+.tox/

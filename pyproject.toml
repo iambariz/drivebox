@@ -28,10 +28,13 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "pytest-cov",
     "pytest-qt",
-    "pyinstaller",
-    "coverage"
+    "pytest-cov",
+    "tox",
+    "pre-commit",
+    "black",
+    "flake8",
+    "isort"
 ]
 
 [project.scripts]
@@ -39,3 +42,6 @@ drivebox = "drivebox.main:main"
 
 [tool.setuptools]
 packages = ["drivebox"]
+
+[tool.setuptools.package-data]
+"drivebox" = ["resources/*.png"]

@@ -1,8 +1,9 @@
 [run]
 branch = True
+source = drivebox
 omit =
-    drivebox/main.py   # GUI entry point, not unit tested
-    drivebox/__init__.py
+    */drivebox/main.py
+    */drivebox/__init__.py
 
 [report]
 show_missing = True

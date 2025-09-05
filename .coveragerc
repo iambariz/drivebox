@@ -1,0 +1,10 @@
+[run]
+branch = True
+omit =
+    drivebox/main.py   # GUI entry point, not unit tested
+    drivebox/__init__.py
+
+[report]
+show_missing = True
+skip_covered = True
+fail_under = 80

@@ -6,27 +6,32 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QLineEdit,
     QHBoxLayout,
-    QInputDialog,
 )
 
 from drivebox.settings import load_settings, save_settings
 from drivebox.auth import get_gdrive_service, delete_token
 from drivebox.ui.options_hotkey_recorder import HotkeyRecorderDialog
+from drivebox.ui.hotkeys_manager import HotkeysManager
+
 
 def get_user_info(service):
     about = service.about().get(fields="user").execute()
     return about["user"]["displayName"], about["user"]["emailAddress"]
 
+
 class OptionsWindow(QDialog):
     def __init__(self, hotkey_callback=None):
         super().__init__()
         self.setWindowTitle("DriveBox Options")
-        self.setFixedSize(350, 250)
+        self.setFixedSize(400, 500)
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
-        self.hotkey_callback = hotkey_callback  # Function to call when hotkey changes
 
-        # Greeting and sign in/out
+        self.hotkey_callback = hotkey_callback
+        self.hotkey_manager = HotkeysManager()
+        self.hotkey_fields = {}
+
+        # Greeting + signin/logout
         self.greeting_label = QLabel()
         self.signin_button = QPushButton("Sign in to Google Drive")
         self.logout_button = QPushButton("Log out")
@@ -47,25 +52,39 @@ class OptionsWindow(QDialog):
         self.layout.addWidget(self.permission_label)
         self.layout.addWidget(self.permission_dropdown)
 
-        # Hotkey section
-        self.hotkey_label = QLabel("Screenshot shortcut:")
-        self.hotkey_field = QLineEdit()
-        self.hotkey_field.setReadOnly(True)
-        self.change_hotkey_btn = QPushButton("Change")
-        self.reset_hotkey_btn = QPushButton("Reset")
+        # Hotkey section (dynamic)
+        hotkeys_title = QLabel("Hotkey Shortcuts:")
+        self.layout.addWidget(hotkeys_title)
 
-        hotkey_layout = QHBoxLayout()
-        hotkey_layout.addWidget(self.hotkey_field)
-        hotkey_layout.addWidget(self.change_hotkey_btn)
-        hotkey_layout.addWidget(self.reset_hotkey_btn)
-
-        self.layout.addWidget(self.hotkey_label)
-        self.layout.addLayout(hotkey_layout)
-
-        self.change_hotkey_btn.clicked.connect(self.change_hotkey)
-        self.reset_hotkey_btn.clicked.connect(self.reset_hotkey)
+        for action, (label_text, default) in self.hotkey_manager.DEFAULTS.items():
+            self._add_hotkey_row(action, label_text, default)
 
         self.update_ui()
+
+    # -------------------- UI Building Helpers --------------------
+
+    def _add_hotkey_row(self, action, label_text, default):
+        label = QLabel(f"{label_text}:")
+        field = QLineEdit()
+        field.setReadOnly(True)
+        field.setText(self.hotkey_manager.get(action))  # load current value
+
+        change_btn = QPushButton("Change")
+        reset_btn = QPushButton("Reset")
+
+        row = QHBoxLayout()
+        row.addWidget(label)
+        row.addWidget(field)
+        row.addWidget(change_btn)
+        row.addWidget(reset_btn)
+
+        self.layout.addLayout(row)
+        self.hotkey_fields[action] = field
+
+        change_btn.clicked.connect(lambda _, act=action, fld=field: self.change_hotkey(act, fld))
+        reset_btn.clicked.connect(lambda _, act=action, fld=field, d=default: self.reset_hotkey(act, fld, d))
+
+    # -------------------- Auth and UI --------------------
 
     def update_ui(self):
         settings = load_settings()
@@ -77,7 +96,6 @@ class OptionsWindow(QDialog):
             self.logout_button.show()
             self.permission_label.show()
             self.permission_dropdown.show()
-            # Set dropdown to current setting
             if settings.get("sharing", "anyone") == "anyone":
                 self.permission_dropdown.setCurrentIndex(0)
             else:
@@ -88,8 +106,10 @@ class OptionsWindow(QDialog):
             self.logout_button.hide()
             self.permission_label.hide()
             self.permission_dropdown.hide()
-        # Hotkey field
-        self.hotkey_field.setText(settings.get("hotkey", "Ctrl+Alt+X"))
+
+        # Update hotkeys
+        for action, field in self.hotkey_fields.items():
+            field.setText(self.hotkey_manager.get(action))
 
     def login_to_gdrive(self):
         service = get_gdrive_service()
@@ -115,32 +135,20 @@ class OptionsWindow(QDialog):
             settings["sharing"] = "private"
         save_settings(settings)
 
-    def change_hotkey(self):
-        # Create and show the hotkey recorder dialog
+    # -------------------- Hotkey Logic --------------------
+
+    def change_hotkey(self, action, field):
         dialog = HotkeyRecorderDialog(self)
         if dialog.exec_():
             new_hotkey = dialog.hotkey_result
             if new_hotkey:
-                settings = load_settings()
-                settings["hotkey"] = new_hotkey
-                save_settings(settings)
-                self.hotkey_field.setText(new_hotkey)
+                self.hotkey_manager.set(action, new_hotkey)
+                field.setText(new_hotkey)
                 if self.hotkey_callback:
-                    self.hotkey_callback(new_hotkey)
+                    self.hotkey_callback(action, new_hotkey)
 
-
-    def reset_hotkey(self):
-        default_hotkey = "Ctrl+Alt+X"
-        settings = load_settings()
-        settings["hotkey"] = default_hotkey
-        save_settings(settings)
-        self.hotkey_field.setText(default_hotkey)
+    def reset_hotkey(self, action, field, default_value):
+        self.hotkey_manager.reset(action)
+        field.setText(self.hotkey_manager.get(action))
         if self.hotkey_callback:
-            self.hotkey_callback(default_hotkey)
-
-        settings = load_settings()
-        if self.permission_dropdown.currentIndex() == 0:
-            settings["sharing"] = "anyone"
-        else:
-            settings["sharing"] = "private"
-        save_settings(settings)
+            self.hotkey_callback(action, self.hotkey_manager.get(action))

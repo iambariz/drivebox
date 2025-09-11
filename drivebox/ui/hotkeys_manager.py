@@ -18,6 +18,8 @@ class HotkeysManager:
 
     def set(self, action: str, hotkey: str):
         """Update hotkey for an action."""
+        if any(v == hotkey for k, v in self._hotkeys.items() if k != action):
+            raise ValueError(f"Hotkey {hotkey} is already assigned to another action.")
         self._hotkeys[action] = hotkey
         self._persist()
 

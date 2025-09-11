@@ -5,7 +5,7 @@ a = Analysis(
     ['drivebox/main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('drivebox/resources/icon.png', 'drivebox/resources')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

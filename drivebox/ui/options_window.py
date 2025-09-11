@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (
     QComboBox,
     QLineEdit,
     QHBoxLayout,
+    QMessageBox,
 )
 
 from drivebox.settings import load_settings, save_settings
@@ -142,7 +143,11 @@ class OptionsWindow(QDialog):
         if dialog.exec_():
             new_hotkey = dialog.hotkey_result
             if new_hotkey:
-                self.hotkey_manager.set(action, new_hotkey)
+                try:
+                    self.hotkey_manager.set(action, new_hotkey)
+                except ValueError as e:
+                    QMessageBox.warning(self, "Duplicate Hotkey", str(e))
+                    return
                 field.setText(new_hotkey)
                 if self.hotkey_callback:
                     self.hotkey_callback(action, new_hotkey)

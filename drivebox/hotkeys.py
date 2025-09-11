@@ -44,6 +44,7 @@ class HotkeyManager:
             for keys_combo, (callback_name, _) in self.registered_hotkeys.items():
                 if all(k in current_keys for k in keys_combo):
                     self.bridge.hotkey_activated.emit(callback_name)
+                    break
 
         def on_release(key):
             current_keys.discard(key)

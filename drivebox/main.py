@@ -10,6 +10,7 @@ from drivebox.recording import RecordingService
 from drivebox.tray import create_tray_menu
 from drivebox.upload import upload_file_to_drivebox
 from drivebox.ui.hotkeys_manager import HotkeysManager
+from drivebox.app_state import AppState
 
 # Signal bridge for thread-safe hotkey communication
 class HotkeyBridge(QObject):
@@ -21,8 +22,9 @@ def main():
 
     bridge = HotkeyBridge()
     notifier = Notifier()
-    screenshot_service = ScreenshotService(notifier)
-    recording_service = RecordingService(notifier, upload_file_to_drivebox)
+    app_state = AppState()
+    screenshot_service = ScreenshotService(notifier, app_state)
+    recording_service = RecordingService(notifier, upload_file_to_drivebox, app_state)
 
     # Central hotkey manager
     hotkey_manager = HotkeyManager(bridge)
@@ -55,6 +57,14 @@ def main():
     tray_icon, action_references = create_tray_menu(
         app, options_window, screenshot_service, recording_service
     )
+
+    def show_result(result, error):
+        if error:
+            notifier.notify("Task Failed", error)
+        elif result:
+            print("Task finished:", result)
+
+    app_state.worker.task_done.connect(show_result)
 
     sys.exit(app.exec_())
 

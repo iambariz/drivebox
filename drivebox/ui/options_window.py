@@ -1,13 +1,9 @@
 from PyQt5.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QLabel,
-    QPushButton,
-    QComboBox,
-    QLineEdit,
-    QHBoxLayout,
-    QMessageBox,
+    QDialog, QVBoxLayout, QTableWidget, QTableWidgetItem,
+    QWidget, QTabWidget, QLabel, QPushButton, QComboBox,
+    QLineEdit, QHBoxLayout, QMessageBox
 )
+from datetime import datetime
 
 from drivebox.settings import load_settings, save_settings
 from drivebox.auth import get_gdrive_service, delete_token
@@ -23,10 +19,25 @@ def get_user_info(service):
 class OptionsWindow(QDialog):
     def __init__(self, hotkey_callback=None):
         super().__init__()
-        self.setWindowTitle("DriveBox Options")
-        self.setFixedSize(400, 500)
-        self.layout = QVBoxLayout()
-        self.setLayout(self.layout)
+        self.setWindowTitle("DriveBox")
+        self.setFixedSize(600, 500)
+
+        vbox = QVBoxLayout(self)
+        self.tabs = QTabWidget()
+        vbox.addWidget(self.tabs)
+
+        # -------------------- Log Tab --------------------
+        self.log_tab = QWidget()
+        self.log_layout = QVBoxLayout(self.log_tab)
+        self.log_table = QTableWidget(0, 4)
+        self.log_table.setHorizontalHeaderLabels(["Time", "Type", "Status", "Result"])
+        self.log_layout.addWidget(self.log_table)
+        self.tabs.addTab(self.log_tab, "📜 Log")
+
+        # -------------------- Settings Tab --------------------
+        self.settings_tab = QWidget()
+        self.settings_layout = QVBoxLayout(self.settings_tab)
+        self.tabs.addTab(self.settings_tab, "⚙ Settings")
 
         self.hotkey_callback = hotkey_callback
         self.hotkey_manager = HotkeysManager()
@@ -47,28 +58,41 @@ class OptionsWindow(QDialog):
         self.logout_button.clicked.connect(self.logout)
         self.permission_dropdown.currentIndexChanged.connect(self.save_permission)
 
-        self.layout.addWidget(self.greeting_label)
-        self.layout.addWidget(self.signin_button)
-        self.layout.addWidget(self.logout_button)
-        self.layout.addWidget(self.permission_label)
-        self.layout.addWidget(self.permission_dropdown)
+        self.settings_layout.addWidget(self.greeting_label)
+        self.settings_layout.addWidget(self.signin_button)
+        self.settings_layout.addWidget(self.logout_button)
+        self.settings_layout.addWidget(self.permission_label)
+        self.settings_layout.addWidget(self.permission_dropdown)
 
         # Hotkey section (dynamic)
         hotkeys_title = QLabel("Hotkey Shortcuts:")
-        self.layout.addWidget(hotkeys_title)
+        self.settings_layout.addWidget(hotkeys_title)
 
         for action, (label_text, default) in self.hotkey_manager.DEFAULTS.items():
             self._add_hotkey_row(action, label_text, default)
 
         self.update_ui()
 
-    # -------------------- UI Building Helpers --------------------
+        # Default: show Log tab first
+        self.tabs.setCurrentIndex(0)
 
+    # -------------------- Log Helpers --------------------
+    def add_log_entry(self, event_type, status, result=""):
+        row = self.log_table.rowCount()
+        self.log_table.insertRow(row)
+        self.log_table.setItem(row, 0, QTableWidgetItem(
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        )
+        self.log_table.setItem(row, 1, QTableWidgetItem(event_type))
+        self.log_table.setItem(row, 2, QTableWidgetItem(status))
+        self.log_table.setItem(row, 3, QTableWidgetItem(result))
+
+    # -------------------- Settings UI Builders --------------------
     def _add_hotkey_row(self, action, label_text, default):
         label = QLabel(f"{label_text}:")
         field = QLineEdit()
         field.setReadOnly(True)
-        field.setText(self.hotkey_manager.get(action))  # load current value
+        field.setText(self.hotkey_manager.get(action))
 
         change_btn = QPushButton("Change")
         reset_btn = QPushButton("Reset")
@@ -79,14 +103,13 @@ class OptionsWindow(QDialog):
         row.addWidget(change_btn)
         row.addWidget(reset_btn)
 
-        self.layout.addLayout(row)
+        self.settings_layout.addLayout(row)
         self.hotkey_fields[action] = field
 
         change_btn.clicked.connect(lambda _, act=action, fld=field: self.change_hotkey(act, fld))
         reset_btn.clicked.connect(lambda _, act=action, fld=field, d=default: self.reset_hotkey(act, fld, d))
 
     # -------------------- Auth and UI --------------------
-
     def update_ui(self):
         settings = load_settings()
         user = settings.get("user")
@@ -137,7 +160,6 @@ class OptionsWindow(QDialog):
         save_settings(settings)
 
     # -------------------- Hotkey Logic --------------------
-
     def change_hotkey(self, action, field):
         dialog = HotkeyRecorderDialog(self)
         if dialog.exec_():

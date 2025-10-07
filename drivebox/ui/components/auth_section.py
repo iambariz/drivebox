@@ -11,7 +11,10 @@ class AuthSection(QWidget):
         
         self._setup_ui()
         self.update_ui()
-    
+
+        # Live updates whenever auth state changes anywhere
+        self.settings_repo.auth_changed.connect(self.update_ui)
+
     def _setup_ui(self):
         """Create UI elements."""
         layout = QVBoxLayout(self)
@@ -31,20 +34,21 @@ class AuthSection(QWidget):
         """Handle login button click."""
         user_info = self.auth_service.login()
         if user_info:
-            self.settings_repo.set_user(user_info)
-            self.update_ui()
-    
+            self.settings_repo.set_user(user_info)  # emits auth_changed -> update_ui()
+
     def _handle_logout(self):
         """Handle logout button click."""
         self.auth_service.logout()
-        self.settings_repo.set_user(None)
-        self.update_ui()
-    
+        self.settings_repo.set_user(None)  # emits auth_changed -> update_ui()
+
     def update_ui(self):
         """Update UI based on authentication state."""
         user = self.settings_repo.get_user()
         if user:
-            first_name = user["name"].split()[0]
+            # Defensive: handle missing name/email gracefully
+            first_name = (user.get("name") or "").split()[0] or user.get(
+                "email", "there"
+            )
             self.greeting_label.setText(f"Hello, {first_name}!")
             self.signin_button.hide()
             self.logout_button.show()

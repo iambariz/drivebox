@@ -5,3 +5,11 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: pipreqs-generate
+        name: Generate requirements.txt (pipreqs)
+        entry: pipreqs src/drivebox --force --mode no-pin --savepath requirements.txt
+        language: system
+        pass_filenames: false

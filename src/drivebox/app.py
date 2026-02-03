@@ -1,15 +1,10 @@
-from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QLabel
+from PyQt5.QtWidgets import QApplication
+
+from drivebox.ui.windows.main_window import MainWindow
 
 
-class App(QObject):
-    started = pyqtSignal()
-
-    def run(self) -> int:
-        qtApp = QApplication([])
-        label = QLabel("Drivebox is running")
-        label.setMinimumWidth(300)
-        label.show()
-
-        self.started.emit()
-        return qtApp.exec_()
+def main() -> None:
+    qtApp = QApplication([])
+    window = MainWindow()
+    window.show()
+    raise SystemExit(qtApp.exec_())

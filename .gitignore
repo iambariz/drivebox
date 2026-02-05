@@ -1,6 +1,10 @@
 # Python virtual environment
 venv/
 .env/
+.env
+
+# Credentials
+credentials/
 
 # Python cache
 __pycache__/

@@ -1,9 +1,9 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
+from PyQt5.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
 
 
 class AuthControls(QWidget):
     """Authentication section with greeting and signin/logout buttons."""
-    
+
     def __init__(self) -> None:
         super().__init__()
         self._setup_ui()
@@ -11,18 +11,18 @@ class AuthControls(QWidget):
     def _setup_ui(self):
         """Create UI elements."""
         layout = QVBoxLayout(self)
-        
+
         self.greeting_label = QLabel()
         self.signin_button = QPushButton("Sign in to Google Drive")
         self.logout_button = QPushButton("Log out")
-        
+
         layout.addWidget(self.greeting_label)
         layout.addWidget(self.signin_button)
         layout.addWidget(self.logout_button)
-        
+
         self.signin_button.clicked.connect(self._handle_login)
         self.logout_button.clicked.connect(self._handle_logout)
-    
+
     def _handle_login(self):
         """Handle login button click."""
         print("Login button clicked")

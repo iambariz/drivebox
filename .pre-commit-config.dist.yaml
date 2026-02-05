@@ -4,7 +4,9 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]
+        stages: [commit]
       - id: ruff-format
+        stages: [commit]
 
   - repo: local
     hooks:
@@ -13,3 +15,12 @@ repos:
         entry: pipreqs src/drivebox --force --mode no-pin --savepath requirements.txt
         language: system
         pass_filenames: false
+        stages: [commit]
+      
+      # Add tests on PUSH later
+      # - id: pytest
+      #   name: Run tests
+      #   entry: pytest
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [push]

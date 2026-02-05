@@ -1,11 +1,12 @@
-#pre-commit install --hook-type pre-push
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.9.6
     hooks:
       - id: ruff
         args: [--fix]
+        stages: [commit]
       - id: ruff-format
+        stages: [commit]
 
   - repo: local
     hooks:
@@ -14,3 +15,12 @@ repos:
         entry: pipreqs src/drivebox --force --mode no-pin --savepath requirements.txt
         language: system
         pass_filenames: false
+        stages: [commit]
+      
+      # Add tests on PUSH later
+      # - id: pytest
+      #   name: Run tests
+      #   entry: pytest
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [push]

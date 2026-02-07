@@ -1,7 +1,179 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "drivebox"
+version = "0.1.0"
+description = "A Dropbox-like application using Google Drive as storage backend"
+readme = "README.md"
+requires-python = ">=3.13"
+license = {text = "MIT"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["google-drive", "sync", "backup", "cloud-storage"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: End Users/Desktop",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "google-auth-oauthlib>=1.2.0",
+    "google-api-python-client>=2.147.0",
+    "google-auth>=2.35.0",
+    "keyring>=25.0.0",
+    "watchdog>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
+    "mypy>=1.8.0",
+    "ruff>=0.9.6",
+    "pre-commit>=3.6.0",
+    "bandit>=1.7.10",
+    "detect-secrets>=1.5.0",
+    "types-requests>=2.31.0",
+]
+
+[project.scripts]
+drivebox = "drivebox.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/yourusername/drivebox"
+Repository = "https://github.com/yourusername/drivebox"
+Issues = "https://github.com/yourusername/drivebox/issues"
+
+# ============================================================================
+# Ruff Configuration
+# ============================================================================
 [tool.ruff]
-line-length = 88
-target-version = "py311"
+target-version = "py313"
+line-length = 100
+extend-exclude = [
+    "__pycache__",
+    ".git",
+    ".venv",
+    "build",
+    "dist",
+    "*.egg-info",
+]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "B", "UP", "SIM"]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "SIM",    # flake8-simplify
+    "TCH",    # flake8-type-checking
+    "Q",      # flake8-quotes
+    "RET",    # flake8-return
+    "ARG",    # flake8-unused-arguments
+    "PTH",    # flake8-use-pathlib
+    "ERA",    # eradicate
+    "PL",     # pylint
+    "TRY",    # tryceratops
+]
+ignore = [
+    "E501",     # Line too long (handled by formatter)
+    "PLR0913",  # Too many arguments
+    "TRY003",   # Long exception messages
+]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG", "PLR2004", "S101"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["drivebox"]
+force-single-line = false
+lines-after-imports = 2
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ============================================================================
+# MyPy Configuration
+# ============================================================================
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+strict_equality = true
+strict = true
+
+[[tool.mypy.overrides]]
+module = [
+    "googleapiclient.*",
+    "google.oauth2.*",
+    "google_auth_oauthlib.*",
+]
+ignore_missing_imports = true
+
+# ============================================================================
+# Bandit Configuration
+# ============================================================================
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101"]
+
+# ============================================================================
+# Pytest Configuration
+# ============================================================================
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--strict-markers",
+    "--tb=short",
+    "--cov=src/drivebox",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-fail-under=80",
+]
+markers = [
+    "slow: marks tests as slow",
+    "integration: marks tests as integration tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/__main__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+    "class .*\\bProtocol\\):",
+    "@overload",
+]

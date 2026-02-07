@@ -16,7 +16,7 @@ repos:
         language: system
         pass_filenames: false
         stages: [commit]
-      
+
       # Add tests on PUSH later
       # - id: pytest
       #   name: Run tests

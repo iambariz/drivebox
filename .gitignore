@@ -38,7 +38,7 @@ dmypy.json
 .pytype/
 
 # ============================================================================
-# Credentials & Secrets (CRITICAL - Never commit!)
+# Credentials & Secrets
 # ============================================================================
 credentials/
 credentials.json

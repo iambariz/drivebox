@@ -4,7 +4,7 @@ from drivebox.ui.windows.main_window import MainWindow
 
 
 def main() -> None:
-    qtApp = QApplication([])
+    qt_app = QApplication([])
     window = MainWindow()
     window.show()
     raise SystemExit(qtApp.exec_())

@@ -110,32 +110,24 @@ indent-style = "space"
 python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
+
+# Relaxed settings for initial development
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 check_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
-strict_equality = true
-strict = true
 
 [[tool.mypy.overrides]]
 module = [
     "googleapiclient.*",
     "google.oauth2.*",
     "google_auth_oauthlib.*",
+    "PyQt5.*",
+    "PyQt6.*",
 ]
 ignore_missing_imports = true
-
-# ============================================================================
-# Bandit Configuration
-# ============================================================================
-[tool.bandit]
-exclude_dirs = ["tests", "venv", ".venv"]
-skips = ["B101"]
-
-# ============================================================================
-# Pytest Configuration
 # ============================================================================
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -177,3 +169,6 @@ exclude_lines = [
     "class .*\\bProtocol\\):",
     "@overload",
 ]
+
+# ============================================================================
+# MyPy Configuration

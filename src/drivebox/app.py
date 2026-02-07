@@ -7,4 +7,4 @@ def main() -> None:
     qt_app = QApplication([])
     window = MainWindow()
     window.show()
-    raise SystemExit(qtApp.exec_())
+    raise SystemExit(qt_app.exec_())

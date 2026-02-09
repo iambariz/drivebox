@@ -1,18 +1,24 @@
-from PyQt5.QtWidgets import QLabel, QPushButton, QVBoxLayout, QWidget
+import logging
+
+from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
+
+from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token
+
+
+logger = logging.getLogger(__name__)
 
 
 class AuthControls(QWidget):
-    """Authentication section with greeting and signin/logout buttons."""
-
     def __init__(self) -> None:
         super().__init__()
+        self.auth_service = GoogleDriveAuthServiceFactory.create()
         self.greeting_label: QLabel
         self.signin_button: QPushButton
         self.logout_button: QPushButton
         self._setup_ui()
+        self._update_ui()
 
     def _setup_ui(self) -> None:
-        """Create UI elements."""
         layout = QVBoxLayout(self)
 
         self.greeting_label = QLabel()
@@ -27,13 +33,35 @@ class AuthControls(QWidget):
         self.logout_button.clicked.connect(self._handle_logout)
 
     def _handle_login(self) -> None:
-        """Handle login button click."""
-        print("Login button clicked")
+        try:
+            # THIS OPENS THE BROWSER!
+            self.auth_service.get_credentials()
+            self._update_ui()
+            QMessageBox.information(self, "Success", "Successfully authenticated!")
+        except FileNotFoundError as e:
+            QMessageBox.critical(
+                self,
+                "Credentials Missing",
+                f"Could not find Google OAuth credentials.\n\n{e}",
+            )
+        except Exception as e:
+            logger.exception("Login failed")
+            QMessageBox.critical(self, "Error", f"Authentication failed: {e}")
 
     def _handle_logout(self) -> None:
-        """Handle logout button click."""
-        print("Logout button clicked")
+        delete_token()
+        self._update_ui()
+        QMessageBox.information(self, "Logged Out", "Successfully logged out!")
 
-    def update_ui(self) -> None:
-        """Update UI based on authentication state."""
-        print("Updating UI based on auth state")
+    def _update_ui(self) -> None:
+        token = self.auth_service.token_storage.load()
+        is_authenticated = token is not None and token.valid
+
+        if is_authenticated:
+            self.greeting_label.setText("✓ Connected to Google Drive")
+            self.signin_button.hide()
+            self.logout_button.show()
+        else:
+            self.greeting_label.setText("Not connected")
+            self.signin_button.show()
+            self.logout_button.hide()

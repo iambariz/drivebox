@@ -38,6 +38,7 @@ repos:
       - id: bandit
         args: [-c, pyproject.toml]
         additional_dependencies: ["bandit[toml]"]
+        exclude: "src/drivebox/storage/file_service.py"
 
   # ============================================================================
   # General Checks

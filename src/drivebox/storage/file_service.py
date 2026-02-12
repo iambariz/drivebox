@@ -5,8 +5,6 @@ from typing import Any
 
 
 class SecureFileService:
-    """Handles secure file operations with proper error handling."""
-
     @staticmethod
     def ensure_directory(path: Path, mode: int = 0o700) -> None:
         path.mkdir(mode=mode, exist_ok=True)
@@ -16,17 +14,18 @@ class SecureFileService:
         try:
             with path.open() as f:
                 data = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            raise ValueError(f"Failed to read {path}: {e}") from e
+        else:
             if not isinstance(data, dict):
                 raise TypeError(f"Expected dict, got {type(data)}")
             return data
-        except (OSError, json.JSONDecodeError) as e:
-            raise ValueError(f"Failed to read {path}: {e}") from e
 
     @staticmethod
     def read_pickle(path: Path) -> Any:
         try:
             with path.open("rb") as f:
-                return pickle.load(f)  # noqa: S301
+                return pickle.load(f)
         except (OSError, pickle.UnpicklingError) as e:
             raise ValueError(f"Failed to read pickle {path}: {e}") from e
 

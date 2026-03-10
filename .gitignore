@@ -1,42 +1,102 @@
-# Python virtual environment
-venv/
-.env/
-
-# Python cache
+# ============================================================================
+# Python
+# ============================================================================
+# Byte-compiled / optimized / DLL files
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
 
-# IDE/editor files
-.vscode/
-.idea/
-*.swp
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
 
-# OS files
-.DS_Store
-Thumbs.db
-
-token.pickle
-token.pickle.old
-credentials.json
-
-#Personal notes
-notes.txt
-
-# Build files
+# Distribution / packaging
 build/
-
-# Distribution files
 dist/
-
-# Resources
-# Ignore ffmpeg binaries
-drivebox/resources/ffmpeg/
-
-# Packaging metadata
 *.egg-info/
 *.egg
 *.whl
-.coverage
+.eggs/
 
-#Tox 
+# Testing
+.pytest_cache/
 .tox/
+.coverage
+.coverage.*
+htmlcov/
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# ============================================================================
+# Credentials & Secrets
+# ============================================================================
+credentials/
+credentials.json
+token.pickle
+token.pickle.*
+*.pem
+*.key
+.env
+.env.*
+!.env.example  # Allow example env file
+
+# Local app directory (may contain sensitive data)
+.drivebox/
+
+# ============================================================================
+# IDE / Editor
+# ============================================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# ============================================================================
+# OS
+# ============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ============================================================================
+# Project Specific
+# ============================================================================
+# Personal notes
+notes.txt
+TODO.txt
+scratch/
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+
+# Resources
+src/drivebox/resources/ffmpeg/
+src/drivebox/resources/temp/
+
+# Local sync folder (if testing)
+Drivebox/
+sync_test/

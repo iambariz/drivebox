@@ -40,7 +40,7 @@ pip install -e .
 
 ### Download ffmpeg
 
-DriveBox requires **ffmpeg** for screen recording.  
+DriveBox requires **ffmpeg** for screen recording.
 Run the helper script to download the correct binary for your OS:
 
 ```bash

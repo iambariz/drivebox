@@ -50,7 +50,12 @@ class EnvironmentCredentialLoader(BaseCredentialLoader):
         if not env_path:
             return None
 
+        # Resolve relative paths from project root
         path = Path(env_path)
+        logger.info(path)
+        if not path.is_absolute():
+            path = Path.cwd() / path
+
         if not path.exists():
             return None
 
@@ -82,7 +87,9 @@ class ChainedCredentialLoader(BaseCredentialLoader):
         self.loaders = loaders
 
     def load(self) -> dict[str, Any] | None:
+        logger.info("ChainedCredentialLoader.load() called")  # ← Add this
         for loader in self.loaders:
+            logger.info(f"Trying {loader.__class__.__name__}...")  # ← Add this
             result = loader.load()
             if result:
                 logger.info(f"Credentials loaded via {loader.__class__.__name__}")

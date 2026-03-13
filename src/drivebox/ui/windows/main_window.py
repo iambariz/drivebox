@@ -1,3 +1,4 @@
+from PyQt5.QtCore import QElapsedTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QVBoxLayout, QWidget
 
 from drivebox.ui.tray.tray_icon import TrayIcon
@@ -28,11 +29,13 @@ class MainWindow(QMainWindow):
         self.tray_icon.screenshot_action.triggered.connect(self._take_screenshot)
         self.tray_icon.quit_action.triggered.connect(self.quit_app)
 
-        # Handle tray icon click
+        # Handle tray icon click — timer used to detect double-click on GNOME,
+        # which reports every activation as Context (3) rather than DoubleClick (2).
+        self._last_activation = QElapsedTimer()
         self.tray_icon.activated.connect(self.on_tray_activated)
 
-    def close_event(self, event):
-        """Minimize to tray instead of closing"""
+    def closeEvent(self, event):  # noqa: N802
+        """Minimize to tray instead of closing."""
         event.ignore()
         self.hide()
         self.tray_icon.showMessage(
@@ -45,14 +48,24 @@ class MainWindow(QMainWindow):
         self.activateWindow()
 
     def on_tray_activated(self, reason):
-        """Handle tray icon click"""
-        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.DoubleClick):
+        if reason == QSystemTrayIcon.DoubleClick:
+            # Standard platforms (Windows/macOS)
             self.show_window()
+            return
+
+        # GNOME reports every click as Context (3); detect double-click by timing.
+        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.Context):
+            if (
+                self._last_activation.isValid()
+                and self._last_activation.elapsed() < QApplication.doubleClickInterval() * 1
+            ):
+                self.show_window()
+            self._last_activation.restart()
 
     def _take_screenshot(self):
         self.auth_controls._take_screenshot()
 
     def quit_app(self):
-        """Actually quit the app"""
+        """Actually quit the app."""
         self.tray_icon.hide()
         QApplication.quit()

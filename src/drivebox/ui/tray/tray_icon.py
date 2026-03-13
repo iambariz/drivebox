@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from PyQt5.QtGui import QCursor, QIcon
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QMenu, QSystemTrayIcon
 
 
@@ -20,7 +20,7 @@ class TrayIcon(QSystemTrayIcon):
         self.menu = QMenu()
 
         # Add actions
-        self.show_action = QAction("Show Window", self)
+        self.show_action = QAction("Settings", self)
         self.screenshot_action = QAction("Take Screenshot", self)
         self.quit_action = QAction("Quit", self)
 
@@ -34,9 +34,4 @@ class TrayIcon(QSystemTrayIcon):
         self.show()
 
     def _on_activated(self, reason):
-        logger = logging.getLogger(__name__)
-
-        logger.info("On activated...")
-        logger.info(reason)
-        if reason == QSystemTrayIcon.Context:
-            self.menu.popup(QCursor.pos())
+        logger.info("On activated with reason: %s", reason)

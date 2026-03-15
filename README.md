@@ -1,30 +1,79 @@
 # DriveBox
 
-DriveBox is a PyQt5 desktop app that captures screenshots, uploads them to Google Drive, and copies a shareable link to your clipboard. It lives in the system tray.
+![Build](https://github.com/iambariz/drivebox/actions/workflows/build.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.13-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
 
-- Take a fullscreen screenshot with one click
-- Upload automatically to Google Drive
-- Shareable link copied to clipboard instantly
-- System tray integration for quick access
+> Take a screenshot. It's in your clipboard. That's it.
 
----
-
-## Requirements
-
-- Python 3.9+
-- A Google OAuth client secrets JSON file
+DriveBox is a lightweight PyQt5 desktop app that lives in your system tray. One click captures your screen, uploads it to Google Drive, and copies a shareable link to your clipboard — instantly.
 
 ---
 
-## Installation
+## Download
+
+Grab the latest binary for your platform from the [Releases](https://github.com/iambariz/drivebox/releases) page — no Python required.
+
+| Platform | File |
+|----------|------|
+| Linux    | `drivebox-linux` |
+| Windows  | `drivebox-windows.exe` |
+| macOS    | `drivebox-macos` |
+
+---
+
+## Features
+
+- **One-click screenshots** — fullscreen capture with a single button or hotkey
+- **Google Drive upload** — automatic upload with shareable link generation
+- **Clipboard integration** — link is copied instantly, ready to paste
+- **System tray** — runs quietly in the background, always accessible
+- **Global hotkey** — `Ctrl+Shift+S` triggers a screenshot from anywhere
+- **Secure auth** — OAuth 2.0 with token caching, no passwords stored
+
+---
+
+## Getting Started
+
+### 1. Get Google OAuth credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com)
+2. Create a project → Enable the **Google Drive API**
+3. Create **OAuth 2.0 credentials** (Desktop app type)
+4. Download the JSON file
+
+### 2. Configure
 
 ```bash
-git clone https://github.com/yourusername/drivebox.git
+cp .env.dist .env
+```
+
+Edit `.env` and set the path to your credentials file:
+
+```
+DRIVEBOX_CLIENT_SECRETS=credentials/google-credentials.json
+```
+
+### 3. Run
+
+```bash
+python -m drivebox
+```
+
+On first launch, a browser window will open for Google sign-in. After that, the token is cached at `~/.drivebox/token.pickle`.
+
+---
+
+## Installation (from source)
+
+```bash
+git clone https://github.com/iambariz/drivebox.git
 cd drivebox
 pip install -e .
 ```
 
-For development (includes linting, testing tools):
+For development:
 
 ```bash
 pip install -e .[dev]
@@ -32,64 +81,36 @@ pip install -e .[dev]
 
 ---
 
-## Configuration
-
-Copy `.env.dist` to `.env` and set `DRIVEBOX_CLIENT_SECRETS` to the path of your Google OAuth client secrets JSON:
-
-```bash
-cp .env.dist .env
-# Edit .env and set DRIVEBOX_CLIENT_SECRETS=credentials/google-credentials.json
-```
-
-On first run, a browser window will open for Google OAuth. The token is cached at `~/.drivebox/token.pickle` for future sessions.
-
----
-
-## Running
-
-```bash
-python -m drivebox
-```
-
----
-
 ## Development
 
-### Lint & format
+### Commands
 
 ```bash
+# Run
+python -m drivebox
+
+# Tests
+.venv/bin/pytest tests/unit/ -v
+.venv/bin/pytest tests/unit/ --cov=src/drivebox   # with coverage
+
+# Lint & format
 ruff check src/
 ruff format src/
-```
 
-### Type check
-
-```bash
+# Type check
 mypy src/
-```
 
-### Tests
-
-```bash
-pytest -v
-pytest --cov=src/drivebox   # with coverage (threshold: 80%)
-```
-
-### Pre-commit checks
-
-```bash
+# All pre-commit checks
 pre-commit run --all-files
 ```
 
----
-
-## Project Structure
+### Project Structure
 
 ```
 src/drivebox/
 ├── auth/           # OAuth flow, token persistence, credential loading
-├── capture/        # PIL-based fullscreen screenshot capture
-├── clipboard/      # Pyperclip wrapper
+├── capture/        # Fullscreen screenshot capture
+├── clipboard/      # Clipboard manager
 ├── config/         # Settings, constants, env var names
 ├── drive/          # Google Drive upload + sharing
 ├── services/       # Orchestration (screenshot → upload → clipboard)
@@ -99,3 +120,31 @@ src/drivebox/
 │   └── windows/    # Main window + controls
 └── __main__.py     # Entry point
 ```
+
+### Data Flow
+
+```
+User action
+  → ScreenshotService.take_and_upload_screenshot()
+      ├─ ScreenCapture.capture_fullscreen()   → PNG bytes
+      ├─ DriveClient.upload_and_share()        → shareable URL
+      └─ ClipboardManager.copy(URL)
+```
+
+---
+
+## Roadmap
+
+- [x] Fullscreen screenshot + upload
+- [x] System tray
+- [x] Global hotkey
+- [ ] Desktop notifications
+- [ ] Area/region screenshot
+- [ ] Settings window
+- [ ] Activity log
+
+---
+
+## License
+
+MIT

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QElapsedTimer
+from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QVBoxLayout, QWidget
 
 from drivebox.ui.tray.tray_icon import TrayIcon
@@ -29,9 +29,6 @@ class MainWindow(QMainWindow):
         self.tray_icon.screenshot_action.triggered.connect(self._take_screenshot)
         self.tray_icon.quit_action.triggered.connect(self.quit_app)
 
-        # Handle tray icon click — timer used to detect double-click on GNOME,
-        # which reports every activation as Context (3) rather than DoubleClick (2).
-        self._last_activation = QElapsedTimer()
         self.tray_icon.activated.connect(self.on_tray_activated)
 
     def closeEvent(self, event):  # noqa: N802
@@ -53,14 +50,10 @@ class MainWindow(QMainWindow):
             self.show_window()
             return
 
-        # GNOME reports every click as Context (3); detect double-click by timing.
-        if reason in (QSystemTrayIcon.Trigger, QSystemTrayIcon.Context):
-            if (
-                self._last_activation.isValid()
-                and self._last_activation.elapsed() < QApplication.doubleClickInterval() * 1
-            ):
-                self.show_window()
-            self._last_activation.restart()
+        if reason == QSystemTrayIcon.Trigger:
+            # Left-click: on Ubuntu/GNOME the context menu doesn't auto-show on
+            # left-click, so we pop it up manually at the current cursor position.
+            self.tray_icon.contextMenu().popup(QCursor.pos())
 
     def _take_screenshot(self):
         self.auth_controls._take_screenshot()

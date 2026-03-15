@@ -1,36 +1,22 @@
 # DriveBox
 
-DriveBox is a cross‑platform screenshot and screen recording app with hotkey support, Google Drive upload, and system tray integration.
+DriveBox is a PyQt5 desktop app that captures screenshots, uploads them to Google Drive, and copies a shareable link to your clipboard. It lives in the system tray.
 
-- 📸 Take fullscreen or region screenshots
-- 🎥 Record your screen with ffmpeg
-- ☁️ Upload automatically to Google Drive
-- 🔑 Global hotkeys for quick actions
-- 🖥️ System tray menu for easy access
-- 🔔 Desktop notifications with shareable links
+- Take a fullscreen screenshot with one click
+- Upload automatically to Google Drive
+- Shareable link copied to clipboard instantly
+- System tray integration for quick access
 
 ---
 
-## 🚀 Features
+## Requirements
 
-- **Screenshots**
-  - Fullscreen (`Ctrl+Alt+X`)
-  - Region (`Ctrl+Alt+R`)
-- **Screen Recording**
-  - Start recording (`Ctrl+Alt+S`)
-  - Stop & upload (`Ctrl+Alt+E`)
-- **Clipboard Integration**
-  - Upload links are automatically copied
-- **Notifications**
-  - Desktop notifications with custom icon
-- **System Tray**
-  - Quick access to all actions
+- Python 3.9+
+- A Google OAuth client secrets JSON file
 
 ---
 
-## 📦 Installation (Development)
-
-Clone the repo and install in editable mode:
+## Installation
 
 ```bash
 git clone https://github.com/yourusername/drivebox.git
@@ -38,91 +24,78 @@ cd drivebox
 pip install -e .
 ```
 
-### Download ffmpeg
-
-DriveBox requires **ffmpeg** for screen recording.
-Run the helper script to download the correct binary for your OS:
+For development (includes linting, testing tools):
 
 ```bash
-python scripts/download_ffmpeg.py
-```
-
-This will place `ffmpeg` inside `drivebox/resources/ffmpeg/`.
-
----
-
-## ▶️ Running the App
-
-After installing:
-
-```bash
-drivebox
-```
-
-Or run directly:
-
-```bash
-python -m drivebox.main
+pip install -e .[dev]
 ```
 
 ---
 
-## 🧪 Running Tests
+## Configuration
 
-We use `pytest` for testing:
+Copy `.env.dist` to `.env` and set `DRIVEBOX_CLIENT_SECRETS` to the path of your Google OAuth client secrets JSON:
+
+```bash
+cp .env.dist .env
+# Edit .env and set DRIVEBOX_CLIENT_SECRETS=credentials/google-credentials.json
+```
+
+On first run, a browser window will open for Google OAuth. The token is cached at `~/.drivebox/token.pickle` for future sessions.
+
+---
+
+## Running
+
+```bash
+python -m drivebox
+```
+
+---
+
+## Development
+
+### Lint & format
+
+```bash
+ruff check src/
+ruff format src/
+```
+
+### Type check
+
+```bash
+mypy src/
+```
+
+### Tests
 
 ```bash
 pytest -v
+pytest --cov=src/drivebox   # with coverage (threshold: 80%)
 ```
 
----
-
-## 📦 Building Executable (PyInstaller)
-
-To build a standalone executable:
+### Pre-commit checks
 
 ```bash
-pyinstaller main.spec
+pre-commit run --all-files
 ```
 
-The output will be in `dist/drivebox/`:
-
-- `drivebox.exe` (Windows)
-- `drivebox` (Linux/Mac)
-
-The build includes:
-- `resources/icon.png`
-- `resources/ffmpeg/`
-
 ---
 
-## ⚙️ Hotkeys
+## Project Structure
 
-| Action                | Default Hotkey   |
-|-----------------------|------------------|
-| Fullscreen Screenshot | `Ctrl+Alt+X`     |
-| Region Screenshot     | `Ctrl+Alt+R`     |
-| Start Recording       | `Ctrl+Alt+S`     |
-| Stop Recording        | `Ctrl+Alt+E`     |
-
-Hotkeys can be changed in the **Options** window.
-
----
-
-## 🛠️ Development Setup
-
-1. Clone the repo
-2. Install dependencies:
-   ```bash
-   pip install -e .
-   ```
-3. Download ffmpeg:
-   ```bash
-   python scripts/download_ffmpeg.py
-   ```
-4. Run the app:
-   ```bash
-   drivebox
-   ```
-
----
+```
+src/drivebox/
+├── auth/           # OAuth flow, token persistence, credential loading
+├── capture/        # PIL-based fullscreen screenshot capture
+├── clipboard/      # Pyperclip wrapper
+├── config/         # Settings, constants, env var names
+├── drive/          # Google Drive upload + sharing
+├── services/       # Orchestration (screenshot → upload → clipboard)
+├── storage/        # Secure file I/O
+├── ui/
+│   ├── tray/       # System tray icon
+│   └── windows/    # Main window + controls
+└── __main__.py     # Entry point
+```

@@ -1,51 +1,81 @@
-# name: Build and Release
+name: Build and Release
 
-# on:
-#   push:
-#     branches: [ master ]   # build artifacts on every push
-#   release:
-#     types: [created]     # special actions only on release
+on:
+  push:
+    tags:
+      - "v*.*.*"
 
-# jobs:
-#   build:
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest, windows-latest, macos-latest]
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: drivebox-linux
+            executable: dist/drivebox
+          - os: windows-latest
+            artifact_name: drivebox-windows
+            executable: dist/drivebox.exe
+          - os: macos-latest
+            artifact_name: drivebox-macos
+            executable: dist/drivebox
 
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Set up Python
-#         uses: actions/setup-python@v5
-#         with:
-#           python-version: "3.11"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
 
-#       - name: Install dependencies
-#         run: |
-#           python -m pip install --upgrade pip
-#           pip install -e .
-#           pip install pyinstaller
+      - name: Install Linux display dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxcb-xinerama0 libxcb1 libx11-xcb1 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0 \
+            xvfb libgl1
 
-#       - name: Download ffmpeg
-#         run: |
-#           python scripts/download_ffmpeg.py
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
 
-#       - name: Build executable
-#         run: |
-#           pyinstaller main.spec
+      - name: Build executable
+        run: pyinstaller drivebox.spec
 
-#       # Always upload artifacts (for dev/test)
-#       - name: Upload artifact
-#         uses: actions/upload-artifact@v4
-#         with:
-#           name: drivebox-${{ matrix.os }}
-#           path: dist/**
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.executable }}
 
-#       # Only on release, upload to GitHub Releases
-#       - name: Upload to GitHub Release
-#         if: github.event_name == 'release'
-#         uses: softprops/action-gh-release@v2
-#         with:
-#           files: dist/**
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename executables
+        run: |
+          mv artifacts/drivebox-linux/drivebox artifacts/drivebox-linux
+          mv artifacts/drivebox-windows/drivebox.exe artifacts/drivebox-windows.exe
+          mv artifacts/drivebox-macos/drivebox artifacts/drivebox-macos
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/drivebox-linux
+            artifacts/drivebox-windows.exe
+            artifacts/drivebox-macos
+          generate_release_notes: true

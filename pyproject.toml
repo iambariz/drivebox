@@ -158,6 +158,9 @@ omit = [
     "*/__pycache__/*",
     "*/venv/*",
     "*/__main__.py",
+    "*/ui/*",
+    "*/hotkeys/*",
+    "*/app.py",
 ]
 
 [tool.coverage.report]

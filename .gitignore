@@ -100,3 +100,4 @@ src/drivebox/resources/temp/
 # Local sync folder (if testing)
 Drivebox/
 sync_test/
+CLAUDE.md

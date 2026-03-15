@@ -1,24 +1,23 @@
 """Screenshot capture functionality."""
 
-import io
 from datetime import datetime
 from pathlib import Path
 
-from PIL import ImageGrab
+from PyQt5.QtCore import QBuffer, QIODevice
+from PyQt5.QtWidgets import QApplication
 
 
 class ScreenCapture:
     @staticmethod
     def capture_fullscreen() -> bytes:
         """Capture full screen and return as PNG bytes."""
-        screenshot = ImageGrab.grab()
+        screen = QApplication.primaryScreen()
+        pixmap = screen.grabWindow(0)
 
-        # Convert to PNG bytes
-        img_bytes = io.BytesIO()
-        screenshot.save(img_bytes, format="PNG")
-        img_bytes.seek(0)
-
-        return img_bytes.getvalue()
+        buf = QBuffer()
+        buf.open(QIODevice.WriteOnly)
+        pixmap.save(buf, "PNG")
+        return bytes(buf.data())
 
     @staticmethod
     def generate_filename() -> str:

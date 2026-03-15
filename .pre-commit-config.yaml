@@ -41,6 +41,19 @@ repos:
         exclude: "src/drivebox/storage/file_service.py"
 
   # ============================================================================
+  # Tests
+  # ============================================================================
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: .venv/bin/pytest
+        args: [tests/unit/]
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # ============================================================================
   # General Checks
   # ============================================================================
   - repo: https://github.com/pre-commit/pre-commit-hooks

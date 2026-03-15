@@ -42,6 +42,7 @@ dev = [
     "bandit>=1.7.10",
     "detect-secrets>=1.5.0",
     "types-requests>=2.31.0",
+    "PyQt5>=5.15.0",
 ]
 
 [project.scripts]

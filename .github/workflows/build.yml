@@ -65,17 +65,17 @@ jobs:
         with:
           path: artifacts
 
-      - name: Rename executables
+      - name: Prepare release files
         run: |
-          mv artifacts/drivebox-linux/drivebox artifacts/drivebox-linux
-          mv artifacts/drivebox-windows/drivebox.exe artifacts/drivebox-windows.exe
-          mv artifacts/drivebox-macos/drivebox artifacts/drivebox-macos
+          cp artifacts/drivebox-linux/drivebox drivebox-linux
+          cp artifacts/drivebox-windows/drivebox.exe drivebox-windows.exe
+          cp artifacts/drivebox-macos/drivebox drivebox-macos
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/drivebox-linux
-            artifacts/drivebox-windows.exe
-            artifacts/drivebox-macos
+            drivebox-linux
+            drivebox-windows.exe
+            drivebox-macos
           generate_release_notes: true

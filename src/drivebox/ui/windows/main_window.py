@@ -25,9 +25,13 @@ class MainWindow(QMainWindow):
 
         # Tray icon
         self.tray_icon = TrayIcon(self)
+        self.tray_icon.login_action.triggered.connect(self.auth_controls._handle_login)
         self.tray_icon.show_action.triggered.connect(self.show_window)
         self.tray_icon.screenshot_action.triggered.connect(self._take_screenshot)
         self.tray_icon.quit_action.triggered.connect(self.quit_app)
+
+        self.auth_controls.auth_state_changed.connect(self.tray_icon.set_authenticated)
+        self.auth_controls._update_ui()  # sync tray to current auth state
 
         self.tray_icon.activated.connect(self.on_tray_activated)
 

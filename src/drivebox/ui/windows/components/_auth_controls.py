@@ -2,6 +2,7 @@
 
 import logging
 
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class AuthControls(QWidget):
+    auth_state_changed = pyqtSignal(bool)  # True = logged in
+
     def __init__(self) -> None:
         super().__init__()
         self.auth_service = GoogleDriveAuthServiceFactory.create()
@@ -86,3 +89,5 @@ class AuthControls(QWidget):
             self.signin_button.show()
             self.logout_button.hide()
             self.screenshot_button.hide()
+
+        self.auth_state_changed.emit(is_authenticated)

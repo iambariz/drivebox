@@ -5,6 +5,18 @@ from pathlib import Path
 
 block_cipher = None
 
+
+def _resolve_icon() -> str | None:
+    """Pick the CI-generated platform icon, falling back to no icon for local builds."""
+    build_dir = Path("build")
+    if sys.platform == "win32":
+        icon_path = build_dir / "icon.ico"
+    elif sys.platform == "darwin":
+        icon_path = build_dir / "icon.icns"
+    else:
+        icon_path = Path("src/drivebox/resources/icons/tray_icon.png")
+    return str(icon_path) if icon_path.exists() else None
+
 a = Analysis(
     ["src/drivebox/__main__.py"],
     pathex=[],
@@ -71,5 +83,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=None,
+    icon=_resolve_icon(),
 )

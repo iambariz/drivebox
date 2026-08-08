@@ -30,6 +30,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+          cache: "pip"
+          cache-dependency-path: |
+            pyproject.toml
+            requirements-lock.txt
 
       - name: Install Linux display dependencies
         if: runner.os == 'Linux'
@@ -44,7 +48,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          pip install pyinstaller
+          pip install pyinstaller pillow
+
+      - name: Generate app icon
+        shell: python
+        run: |
+          from pathlib import Path
+
+          from PIL import Image
+
+          src = Path("src/drivebox/resources/icons/tray_icon.png")
+          build_dir = Path("build")
+          build_dir.mkdir(exist_ok=True)
+          img = Image.open(src).convert("RGBA")
+
+          if "${{ runner.os }}" == "Windows":
+              sizes = [(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+              img.save(build_dir / "icon.ico", format="ICO", sizes=sizes)
+          elif "${{ runner.os }}" == "macOS":
+              img.save(build_dir / "icon.icns", format="ICNS")
 
       - name: Build executable
         run: pyinstaller drivebox.spec

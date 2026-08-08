@@ -1,48 +1,23 @@
 """Screenshot capture functionality."""
 
-import os
-import subprocess  # nosec B404
-import tempfile
 from datetime import datetime
 from pathlib import Path
 
-import imageio_ffmpeg
+from PyQt5.QtCore import QBuffer, QIODevice
 from PyQt5.QtWidgets import QApplication
 
 
 class ScreenCapture:
     @staticmethod
     def capture_fullscreen() -> bytes:
-        """Capture full screen and return as PNG bytes via ffmpeg x11grab."""
+        """Capture full screen and return as PNG bytes via Qt's screen grab."""
         screen = QApplication.primaryScreen()
-        geo = screen.geometry()
-        size = f"{geo.width()}x{geo.height()}"
-        display = os.environ.get("DISPLAY", ":0")
+        pixmap = screen.grabWindow(0)
 
-        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
-            tmp_path = Path(f.name)
-
-        try:
-            subprocess.run(  # nosec B603
-                [
-                    imageio_ffmpeg.get_ffmpeg_exe(),
-                    "-y",
-                    "-f",
-                    "x11grab",
-                    "-video_size",
-                    size,
-                    "-i",
-                    display,
-                    "-vframes",
-                    "1",
-                    str(tmp_path),
-                ],
-                check=True,
-                capture_output=True,
-            )
-            return tmp_path.read_bytes()
-        finally:
-            tmp_path.unlink(missing_ok=True)
+        buffer = QBuffer()
+        buffer.open(QIODevice.WriteOnly)
+        pixmap.save(buffer, "PNG")
+        return bytes(buffer.data())
 
     @staticmethod
     def generate_filename() -> str:

@@ -12,10 +12,12 @@ class ScreenCapture:
     def capture_fullscreen() -> bytes:
         """Capture full screen and return as PNG bytes via Qt's screen grab."""
         screen = QApplication.primaryScreen()
-        pixmap = screen.grabWindow(0)
+        if screen is None:
+            raise RuntimeError("No primary screen available")
+        pixmap = screen.grabWindow(0)  # type: ignore[arg-type]
 
         buffer = QBuffer()
-        buffer.open(QIODevice.WriteOnly)
+        buffer.open(QIODevice.WriteOnly)  # type: ignore[attr-defined]
         pixmap.save(buffer, "PNG")
         return bytes(buffer.data())
 

@@ -1,6 +1,7 @@
 """Google Drive authentication services."""
 
 import logging
+from typing import cast
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -58,7 +59,7 @@ class CredentialRefreshService:
         flow = InstalledAppFlow.from_client_config(client_secrets, self.scopes)
         creds = flow.run_local_server(port=0)
         logger.info("New credentials obtained via OAuth")
-        return creds
+        return cast("Credentials", creds)
 
 
 class GoogleDriveAuthService:

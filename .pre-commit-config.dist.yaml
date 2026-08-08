@@ -10,17 +10,6 @@ repos:
       - id: ruff-format
 
   # ============================================================================
-  # Type Checking
-  # ============================================================================
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-requests
-        args: [--ignore-missing-imports]
-
-  # ============================================================================
   # Security
   # ============================================================================
   - repo: https://github.com/Yelp/detect-secrets
@@ -42,6 +31,14 @@ repos:
   # ============================================================================
   - repo: local
     hooks:
+      - id: mypy
+        name: mypy
+        entry: .venv/bin/mypy
+        args: [src/]
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: pytest
         name: pytest
         entry: .venv/bin/pytest

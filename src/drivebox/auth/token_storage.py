@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import cast
 
 from google.oauth2.credentials import Credentials
 
@@ -31,7 +32,7 @@ class PickleTokenStorage:
             return None
         else:
             logger.info("Token loaded from storage")
-            return creds
+            return cast("Credentials", creds)
 
     def save(self, creds: Credentials) -> None:
         self.file_service.write_pickle(self.token_path, creds)

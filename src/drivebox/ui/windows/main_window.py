@@ -47,7 +47,10 @@ class MainWindow(QMainWindow):
         event.ignore()
         self.hide()
         self.tray_icon.showMessage(
-            "Drivebox", "App minimized to tray", QSystemTrayIcon.Information, 2000
+            "Drivebox",
+            "App minimized to tray",
+            QSystemTrayIcon.Information,  # type: ignore[attr-defined]
+            2000,
         )
 
     def show_window(self):
@@ -56,15 +59,17 @@ class MainWindow(QMainWindow):
         self.activateWindow()
 
     def on_tray_activated(self, reason):
-        if reason == QSystemTrayIcon.DoubleClick:
+        if reason == QSystemTrayIcon.DoubleClick:  # type: ignore[attr-defined]
             # Standard platforms (Windows/macOS)
             self.show_window()
             return
 
-        if reason == QSystemTrayIcon.Trigger:
+        if reason == QSystemTrayIcon.Trigger:  # type: ignore[attr-defined]
             # Left-click: on Ubuntu/GNOME the context menu doesn't auto-show on
             # left-click, so we pop it up manually at the current cursor position.
-            self.tray_icon.contextMenu().popup(QCursor.pos())
+            menu = self.tray_icon.contextMenu()
+            if menu is not None:
+                menu.popup(QCursor.pos())
 
     def _on_auth_state_changed(self, authenticated: bool) -> None:
         self._authenticated = authenticated

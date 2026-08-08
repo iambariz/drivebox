@@ -5,7 +5,11 @@ import logging
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
-from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token
+from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token, get_gdrive_service
+from drivebox.capture import ScreenCapture
+from drivebox.clipboard import ClipboardManager
+from drivebox.drive import DriveClient
+from drivebox.services import ScreenshotService
 
 
 logger = logging.getLogger(__name__)
@@ -63,12 +67,6 @@ class AuthControls(QWidget):
 
     def _take_screenshot(self) -> None:
         try:
-            from drivebox.auth import get_gdrive_service
-            from drivebox.capture import ScreenCapture
-            from drivebox.clipboard import ClipboardManager
-            from drivebox.drive import DriveClient
-            from drivebox.services import ScreenshotService
-
             drive_service = get_gdrive_service()
             service = ScreenshotService(
                 capture=ScreenCapture(),

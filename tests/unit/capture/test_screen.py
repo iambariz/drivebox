@@ -23,30 +23,22 @@ def test_save_local_writes_bytes(tmp_path):
     assert path.read_bytes() == b"data"
 
 
-@patch("drivebox.capture.screen.imageio_ffmpeg.get_ffmpeg_exe", return_value="/usr/bin/ffmpeg")
-@patch("drivebox.capture.screen.subprocess.run")
 @patch("drivebox.capture.screen.QApplication")
-def test_capture_fullscreen_calls_ffmpeg(mock_qapp, mock_run, mock_ffmpeg, tmp_path):
-    screen = MagicMock()
-    screen.geometry.return_value.width.return_value = 1920
-    screen.geometry.return_value.height.return_value = 1080
-    mock_qapp.primaryScreen.return_value = screen
+def test_capture_fullscreen_returns_png_bytes(mock_qapp):
+    fake_png = b"\x89PNG\r\n\x1a\nfake-image-data"
 
-    fake_png = b"\x89PNG\r\n"
+    def fake_save(buffer, fmt):
+        assert fmt == "PNG"
+        buffer.write(fake_png)
 
-    def fake_subprocess(cmd, **kwargs):
-        # Write fake PNG to the temp file path (last arg in cmd)
-        from pathlib import Path
+    mock_pixmap = MagicMock()
+    mock_pixmap.save.side_effect = fake_save
 
-        Path(cmd[-1]).write_bytes(fake_png)
-        return MagicMock()
-
-    mock_run.side_effect = fake_subprocess
+    mock_screen = MagicMock()
+    mock_screen.grabWindow.return_value = mock_pixmap
+    mock_qapp.primaryScreen.return_value = mock_screen
 
     result = ScreenCapture.capture_fullscreen()
 
     assert result == fake_png
-    mock_run.assert_called_once()
-    cmd = mock_run.call_args[0][0]
-    assert "/usr/bin/ffmpeg" in cmd
-    assert "1920x1080" in cmd
+    mock_screen.grabWindow.assert_called_once_with(0)

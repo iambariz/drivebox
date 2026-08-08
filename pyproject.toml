@@ -92,7 +92,6 @@ ignore = [
     "E501",     # Line too long (handled by formatter)
     "PLR0913",  # Too many arguments
     "TRY003",   # Long exception messages
-    "PLC0415",  # Deliberate lazy imports (defer heavy PyQt5/Google API imports)
 ]
 
 [tool.ruff.lint.per-file-ignores]

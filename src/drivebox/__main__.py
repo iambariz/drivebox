@@ -6,6 +6,8 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
+from drivebox.app import main as app_main
+
 
 # Load .env file
 load_dotenv()
@@ -30,8 +32,6 @@ def main() -> int:
     logger = logging.getLogger(__name__)
 
     logger.info("Drivebox starting...")
-
-    from drivebox.app import main as app_main
 
     return app_main()
 

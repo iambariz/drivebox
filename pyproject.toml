@@ -10,14 +10,14 @@ readme = "README.md"
 requires-python = ">=3.13"
 license = {text = "MIT"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "iambariz"}
 ]
 keywords = ["google-drive", "sync", "backup", "cloud-storage"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
@@ -49,9 +49,9 @@ dev = [
 drivebox = "drivebox.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/yourusername/drivebox"
-Repository = "https://github.com/yourusername/drivebox"
-Issues = "https://github.com/yourusername/drivebox/issues"
+Homepage = "https://github.com/iambariz/drivebox"
+Repository = "https://github.com/iambariz/drivebox"
+Issues = "https://github.com/iambariz/drivebox/issues"
 
 # ============================================================================
 # Ruff Configuration

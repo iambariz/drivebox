@@ -1,6 +1,6 @@
 import logging
 
-from drivebox.capture import ScreenCapture
+from drivebox.capture import Capturer, generate_filename
 from drivebox.clipboard import ClipboardManager
 from drivebox.drive import DriveClient
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ScreenshotService:
     def __init__(
         self,
-        capture: ScreenCapture,
+        capture: Capturer,
         drive_client: DriveClient,
         clipboard: ClipboardManager,
     ) -> None:
@@ -25,7 +25,7 @@ class ScreenshotService:
 
         # Capture
         image_data = self.capture.capture_fullscreen()
-        filename = self.capture.generate_filename()
+        filename = generate_filename()
 
         logger.info(f"Uploading {filename}...")
 

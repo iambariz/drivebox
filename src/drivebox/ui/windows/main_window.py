@@ -29,6 +29,7 @@ class MainWindow(QMainWindow):
         self.tray_icon.login_action.triggered.connect(self.auth_controls._handle_login)
         self.tray_icon.show_action.triggered.connect(self.show_window)
         self.tray_icon.screenshot_action.triggered.connect(self._take_screenshot)
+        self.tray_icon.region_action.triggered.connect(self._take_region_screenshot)
         self.tray_icon.quit_action.triggered.connect(self.quit_app)
 
         self._authenticated = False
@@ -40,6 +41,7 @@ class MainWindow(QMainWindow):
         # Global hotkey
         self._hotkey_listener = HotkeyListener(self)
         self._hotkey_listener.screenshot_requested.connect(self._take_screenshot)
+        self._hotkey_listener.region_requested.connect(self._take_region_screenshot)
         self._hotkey_listener.start()
 
     def closeEvent(self, event):  # noqa: N802
@@ -79,6 +81,11 @@ class MainWindow(QMainWindow):
         if not self._authenticated:
             return
         self.auth_controls._take_screenshot()
+
+    def _take_region_screenshot(self):
+        if not self._authenticated:
+            return
+        self.auth_controls._take_region_screenshot()
 
     def quit_app(self):
         """Actually quit the app."""

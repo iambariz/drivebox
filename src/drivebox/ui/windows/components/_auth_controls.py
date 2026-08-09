@@ -25,6 +25,7 @@ class AuthControls(QWidget):
         self.signin_button: QPushButton
         self.logout_button: QPushButton
         self.screenshot_button: QPushButton
+        self.region_button: QPushButton
         self._setup_ui()
         self._update_ui()
 
@@ -35,15 +36,18 @@ class AuthControls(QWidget):
         self.signin_button = QPushButton("Sign in to Google Drive")
         self.logout_button = QPushButton("Log out")
         self.screenshot_button = QPushButton("Take Screenshot (Ctrl+Shift+S)")
+        self.region_button = QPushButton("Capture Region (Ctrl+Shift+R)")
 
         layout.addWidget(self.greeting_label)
         layout.addWidget(self.signin_button)
         layout.addWidget(self.logout_button)
         layout.addWidget(self.screenshot_button)
+        layout.addWidget(self.region_button)
 
         self.signin_button.clicked.connect(self._handle_login)
         self.logout_button.clicked.connect(self._handle_logout)
         self.screenshot_button.clicked.connect(self._take_screenshot)
+        self.region_button.clicked.connect(self._take_region_screenshot)
 
     def _handle_login(self) -> None:
         try:
@@ -82,6 +86,9 @@ class AuthControls(QWidget):
             logger.exception("Screenshot failed")
             QMessageBox.critical(self, "Error", "Screenshot upload failed")
 
+    def _take_region_screenshot(self) -> None:
+        QMessageBox.information(self, "Coming Soon", "Region capture isn't implemented yet.")
+
     def _update_ui(self) -> None:
         token = self.auth_service.token_storage.load()
         is_authenticated = token is not None and token.valid
@@ -91,10 +98,12 @@ class AuthControls(QWidget):
             self.signin_button.hide()
             self.logout_button.show()
             self.screenshot_button.show()
+            self.region_button.show()
         else:
             self.greeting_label.setText("Not connected")
             self.signin_button.show()
             self.logout_button.hide()
             self.screenshot_button.hide()
+            self.region_button.hide()
 
         self.auth_state_changed.emit(is_authenticated)

@@ -9,14 +9,20 @@ logger = logging.getLogger(__name__)
 
 class HotkeyListener(QObject):
     screenshot_requested = pyqtSignal()
+    region_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._hotkeys = keyboard.GlobalHotKeys({"<ctrl>+<shift>+s": self._on_screenshot_hotkey})
+        self._hotkeys = keyboard.GlobalHotKeys(
+            {
+                "<ctrl>+<shift>+s": self._on_screenshot_hotkey,
+                "<ctrl>+<shift>+r": self._on_region_hotkey,
+            }
+        )
 
     def start(self) -> None:
         self._hotkeys.start()
-        logger.info("Global hotkey listener started (Ctrl+Shift+S)")
+        logger.info("Global hotkey listener started (Ctrl+Shift+S, Ctrl+Shift+R)")
 
     def stop(self) -> None:
         self._hotkeys.stop()
@@ -24,3 +30,7 @@ class HotkeyListener(QObject):
     def _on_screenshot_hotkey(self) -> None:
         logger.info("Hotkey Ctrl+Shift+S triggered")
         self.screenshot_requested.emit()
+
+    def _on_region_hotkey(self) -> None:
+        logger.info("Hotkey Ctrl+Shift+R triggered")
+        self.region_requested.emit()

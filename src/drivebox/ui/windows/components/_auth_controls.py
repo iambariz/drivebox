@@ -6,7 +6,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token, get_gdrive_service
-from drivebox.capture import ScreenCapture
+from drivebox.capture import get_capturer
 from drivebox.clipboard import ClipboardManager
 from drivebox.drive import DriveClient
 from drivebox.services import ScreenshotService
@@ -69,7 +69,7 @@ class AuthControls(QWidget):
         try:
             drive_service = get_gdrive_service()
             service = ScreenshotService(
-                capture=ScreenCapture(),
+                capture=get_capturer(),
                 drive_client=DriveClient(drive_service),
                 clipboard=ClipboardManager(),
             )

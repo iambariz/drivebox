@@ -87,7 +87,23 @@ class AuthControls(QWidget):
             QMessageBox.critical(self, "Error", "Screenshot upload failed")
 
     def _take_region_screenshot(self) -> None:
-        QMessageBox.information(self, "Coming Soon", "Region capture isn't implemented yet.")
+        try:
+            drive_service = get_gdrive_service()
+            service = ScreenshotService(
+                capture=get_capturer(),
+                drive_client=DriveClient(drive_service),
+                clipboard=ClipboardManager(),
+            )
+            link = service.take_and_upload_region()
+            if link is None:
+                return
+
+            QMessageBox.information(
+                self, "Screenshot Uploaded!", f"Link copied to clipboard:\n{link}"
+            )
+        except Exception:
+            logger.exception("Region screenshot failed")
+            QMessageBox.critical(self, "Error", "Region screenshot upload failed")
 
     def _update_ui(self) -> None:
         token = self.auth_service.token_storage.load()

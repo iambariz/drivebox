@@ -11,6 +11,7 @@ from drivebox.services.screenshot_service import ScreenshotService
 def capture():
     mock = MagicMock()
     mock.capture_fullscreen.return_value = b"png_bytes"
+    mock.capture_region.return_value = b"region_png_bytes"
     return mock
 
 
@@ -55,3 +56,27 @@ def test_uploads_with_correct_args(mock_generate_filename, service, drive_client
 def test_copies_link_to_clipboard(service, clipboard, drive_client):
     service.take_and_upload_screenshot()
     clipboard.copy.assert_called_once_with("https://drive.google.com/file/d/abc123/view")
+
+
+@patch(
+    "drivebox.services.screenshot_service.generate_filename",
+    return_value="region_20260315_120000.png",
+)
+def test_region_uploads_with_correct_args(mock_generate_filename, service, drive_client):
+    link = service.take_and_upload_region()
+
+    mock_generate_filename.assert_called_once_with("region")
+    drive_client.upload_and_share.assert_called_once_with(
+        b"region_png_bytes", "region_20260315_120000.png"
+    )
+    assert link == "https://drive.google.com/file/d/abc123/view"
+
+
+def test_region_cancelled_skips_upload_and_clipboard(service, capture, drive_client, clipboard):
+    capture.capture_region.return_value = None
+
+    link = service.take_and_upload_region()
+
+    assert link is None
+    drive_client.upload_and_share.assert_not_called()
+    clipboard.copy.assert_not_called()

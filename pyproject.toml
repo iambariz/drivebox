@@ -164,6 +164,7 @@ omit = [
     "*/ui/*",
     "*/hotkeys/*",
     "*/app.py",
+    "*/capture/region_selector.py",
 ]
 
 [tool.coverage.report]

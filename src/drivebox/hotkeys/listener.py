@@ -1,36 +1,33 @@
 import logging
+from functools import partial
 
 from pynput import keyboard
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from drivebox.actions import CaptureAction
 
 
 logger = logging.getLogger(__name__)
 
 
 class HotkeyListener(QObject):
-    screenshot_requested = pyqtSignal()
-    region_requested = pyqtSignal()
+    action_triggered = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, actions: list[CaptureAction], parent=None) -> None:
         super().__init__(parent)
+        self._actions = actions
         self._hotkeys = keyboard.GlobalHotKeys(
-            {
-                "<ctrl>+<shift>+s": self._on_screenshot_hotkey,
-                "<ctrl>+<shift>+r": self._on_region_hotkey,
-            }
+            {action.hotkey: partial(self._on_hotkey, action) for action in actions}
         )
 
     def start(self) -> None:
         self._hotkeys.start()
-        logger.info("Global hotkey listener started (Ctrl+Shift+S, Ctrl+Shift+R)")
+        hotkeys = ", ".join(f"{a.hotkey} ({a.label})" for a in self._actions)
+        logger.info("Global hotkey listener started: %s", hotkeys)
 
     def stop(self) -> None:
         self._hotkeys.stop()
 
-    def _on_screenshot_hotkey(self) -> None:
-        logger.info("Hotkey Ctrl+Shift+S triggered")
-        self.screenshot_requested.emit()
-
-    def _on_region_hotkey(self) -> None:
-        logger.info("Hotkey Ctrl+Shift+R triggered")
-        self.region_requested.emit()
+    def _on_hotkey(self, action: CaptureAction) -> None:
+        logger.info("Hotkey %s triggered (%s)", action.hotkey, action.id)
+        self.action_triggered.emit(action.id)

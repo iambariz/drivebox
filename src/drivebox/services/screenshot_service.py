@@ -37,3 +37,26 @@ class ScreenshotService:
 
         logger.info(f"Done! Link: {link}")
         return link
+
+    def take_and_upload_region(self) -> str | None:
+        """Capture a user-selected region, upload to Drive, copy link to clipboard.
+
+        Returns None if the user cancels the region selection.
+        """
+        logger.info("Capturing region...")
+
+        image_data = self.capture.capture_region()
+        if image_data is None:
+            logger.info("Region capture cancelled")
+            return None
+
+        filename = generate_filename("region")
+
+        logger.info(f"Uploading {filename}...")
+
+        link = self.drive_client.upload_and_share(image_data, filename)
+
+        self.clipboard.copy(link)
+
+        logger.info(f"Done! Link: {link}")
+        return link

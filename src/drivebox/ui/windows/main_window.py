@@ -1,6 +1,7 @@
 from PyQt5.QtGui import QCursor
 from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QVBoxLayout, QWidget
 
+from drivebox.actions import CAPTURE_ACTIONS
 from drivebox.hotkeys import HotkeyListener
 from drivebox.ui.tray.tray_icon import TrayIcon
 
@@ -25,10 +26,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.auth_controls)
 
         # Tray icon
-        self.tray_icon = TrayIcon(self)
+        self.tray_icon = TrayIcon(actions=CAPTURE_ACTIONS, parent=self)
         self.tray_icon.login_action.triggered.connect(self.auth_controls._handle_login)
         self.tray_icon.show_action.triggered.connect(self.show_window)
-        self.tray_icon.screenshot_action.triggered.connect(self._take_screenshot)
+        self.tray_icon.action_triggered.connect(self._on_capture_action)
         self.tray_icon.quit_action.triggered.connect(self.quit_app)
 
         self._authenticated = False
@@ -38,8 +39,8 @@ class MainWindow(QMainWindow):
         self.tray_icon.activated.connect(self.on_tray_activated)
 
         # Global hotkey
-        self._hotkey_listener = HotkeyListener(self)
-        self._hotkey_listener.screenshot_requested.connect(self._take_screenshot)
+        self._hotkey_listener = HotkeyListener(actions=CAPTURE_ACTIONS, parent=self)
+        self._hotkey_listener.action_triggered.connect(self._on_capture_action)
         self._hotkey_listener.start()
 
     def closeEvent(self, event):  # noqa: N802
@@ -75,10 +76,14 @@ class MainWindow(QMainWindow):
         self._authenticated = authenticated
         self.tray_icon.set_authenticated(authenticated)
 
-    def _take_screenshot(self):
+    def _on_capture_action(self, action_id: str) -> None:
         if not self._authenticated:
             return
-        self.auth_controls._take_screenshot()
+        handler = {
+            "screenshot": self.auth_controls._take_screenshot,
+            "region": self.auth_controls._take_region_screenshot,
+        }[action_id]
+        handler()
 
     def quit_app(self):
         """Actually quit the app."""

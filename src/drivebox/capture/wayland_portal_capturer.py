@@ -1,4 +1,4 @@
-"""Fullscreen capture via the xdg-desktop-portal Screenshot API (Wayland)."""
+"""Fullscreen and region capture via the xdg-desktop-portal Screenshot API (Wayland)."""
 
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -15,16 +15,27 @@ PORTAL_PATH = "/org/freedesktop/portal/desktop"
 PORTAL_SCREENSHOT_IFACE = "org.freedesktop.portal.Screenshot"
 PORTAL_REQUEST_IFACE = "org.freedesktop.portal.Request"
 PORTAL_TIMEOUT_MS = 10_000
+PORTAL_RESPONSE_SUCCESS = 0
+PORTAL_RESPONSE_CANCELLED = 1
 
 
 class WaylandPortalCapturer(Capturer):
     def capture_fullscreen(self) -> bytes:
+        data = self._capture(interactive=False)
+        if data is None:
+            raise RuntimeError("Screenshot portal request was cancelled unexpectedly")
+        return data
+
+    def capture_region(self) -> bytes | None:
+        return self._capture(interactive=True)
+
+    def _capture(self, interactive: bool) -> bytes | None:
         bus = QDBusConnection.sessionBus()
         if not bus.isConnected():
             raise RuntimeError("Could not connect to D-Bus session bus")
 
         interface = QDBusInterface(PORTAL_SERVICE, PORTAL_PATH, PORTAL_SCREENSHOT_IFACE, bus)
-        reply = interface.call("Screenshot", "", {"interactive": False})
+        reply = interface.call("Screenshot", "", {"interactive": interactive})
         if reply.type() == QDBusMessage.ErrorMessage:
             raise RuntimeError(f"Portal Screenshot call failed: {reply.errorMessage()}")
 
@@ -42,7 +53,9 @@ class WaylandPortalCapturer(Capturer):
 
         if receiver.response is None:
             raise RuntimeError("Timed out waiting for screenshot portal response")
-        if receiver.response != 0:
+        if receiver.response == PORTAL_RESPONSE_CANCELLED:
+            return None
+        if receiver.response != PORTAL_RESPONSE_SUCCESS:
             raise RuntimeError(f"Screenshot portal request failed (code {receiver.response})")
 
         uri = receiver.results.get("uri")

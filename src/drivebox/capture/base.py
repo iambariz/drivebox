@@ -10,11 +10,15 @@ class Capturer(ABC):
     def capture_fullscreen(self) -> bytes:
         """Capture full screen and return as PNG bytes."""
 
+    @abstractmethod
+    def capture_region(self) -> bytes | None:
+        """Capture a user-selected region. Returns None if the user cancels."""
 
-def generate_filename() -> str:
+
+def generate_filename(prefix: str = "screenshot") -> str:
     """Generate timestamped filename."""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    return f"screenshot_{timestamp}.png"
+    return f"{prefix}_{timestamp}.png"
 
 
 def save_local(image_data: bytes, path: Path) -> None:

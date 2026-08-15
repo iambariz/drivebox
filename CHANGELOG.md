@@ -4,81 +4,48 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
----
+## [Unreleased]
 
-## [Unreleased] — v1.0.0 (MVP, targeting merge to master)
-
-### In Progress
-- Desktop notifications ("Uploading…", "Link copied!", error states)
-- Global hotkey (`Ctrl+Shift+S`) to trigger screenshot while app is backgrounded
-- Polish: app icon, better error messages, loading states in UI
-- Unit tests covering all services (80% coverage threshold)
-
----
-
-## [Unreleased] — v2.0.0
-
-### Planned
-- Settings window: customisable hotkey, upload folder, default file permissions, auto-start on boot
-- Permission controls: toggle public/private on upload, optional expiring links
-- Folder management: create/select Drive folder, organise by date (`YYYY/MM/DD`)
-
----
-
-## [Unreleased] — v3.0.0
-
-### Planned
-- Area selection with drag, crosshair cursor, and preview before upload
-- Window capture: active window only, multi-monitor support
-- Activity log: view history, re-copy links, delete from Drive, search
-- Additional shortcuts: `Ctrl+Shift+A` (area), `Ctrl+Shift+W` (window)
-
----
-
-## [Unreleased] — v4.0.0
-
-### Planned
-- Watch a local folder and auto-upload new files
-- Sync deletions and conflict resolution
-
----
-
-## [Unreleased] — v5.0.0
-
-### Planned
-- Full screen and area recording, audio toggle, stop/pause controls
-- Post-processing: compression, format conversion, basic trim
-
----
-
-## [0.2.0] — 2025 (v2 rework, pre-release)
+## [1.1.0] - 2026-08-10
 
 ### Added
-- Full project rework under `master-v2` branch
-- PyQt5 main window with login/logout auth controls
-- Google OAuth flow with token caching (`~/.drivebox/token.pickle`)
-- Credential loading chain: Keyring → `DRIVEBOX_CLIENT_SECRETS` env var → file
-- Google Drive upload client with shareable link generation
-- PIL-based fullscreen screenshot capture
-- Clipboard manager (pyperclip wrapper)
-- Screenshot service orchestrating capture → upload → clipboard copy
-- System tray icon with context menu
-- Auth-aware tray menu (items enabled/disabled based on login state)
-- Global hotkey support (Linux)
-- `.env` support via `python-dotenv`
-- Secure file storage service (0o600 files, 0o700 dirs)
-- Pre-commit hooks (ruff, mypy, large file check, private key detection)
+- Region (partial) screenshot capture — drag-to-select overlay on X11/Windows/macOS via a custom Qt selector, native compositor picker on Wayland via xdg-desktop-portal's interactive `Screenshot` call
+- `Capturer` interface (`capture/base.py`) with one handler per capture mechanism (`QScreenCapturer`, `WaylandPortalCapturer`), selected at runtime by `capture/factory.py`
+- Shared `CAPTURE_ACTIONS` registry (`actions.py`) driving the tray menu, global hotkeys, and window buttons from a single source instead of duplicated per-action wiring
+- App icon (`.ico`/`.icns`) generated at build time and embedded in Windows/macOS release binaries
 
----
+### Fixed
+- Fullscreen capture returning solid black under Wayland — now routes through xdg-desktop-portal instead of `QScreen.grabWindow()`, which reads X11's root window and is never filled with real pixels for arbitrary clients under Wayland's compositor model
+- Screenshot capture was Linux/X11-only (`ffmpeg x11grab`) despite the release pipeline building and shipping Windows/macOS binaries that could never actually take a screenshot — replaced with Qt's cross-platform `QScreen.grabWindow()`
+- Missing `python-dotenv` dependency — imported in `__main__.py` but never declared in `pyproject.toml`
 
-## [0.1.0] — 2024 (initial version)
+### Changed
+- CI now runs `ruff`, `mypy`, and `bandit` in addition to `pytest` (previously only tests ran, so lint/type/security issues went uncaught)
+- Removed empty `adapters/`, `ports/`, `domain/` scaffolding — unused hexagonal-architecture directories with no implementation
+- Removed redundant `requirements.txt` and the `pipreqs-generate` pre-commit hook — `pyproject.toml` and `requirements-lock.txt` are the real dependency source of truth
+
+## [1.0.0] - 2026-03-15
+
+Full rewrite of the original prototype (see `0.1.0-beta` below) onto its current architecture.
 
 ### Added
-- Initial PyQt5 app with system tray
-- Fullscreen and region screenshot capture
-- Screen recording via ffmpeg
-- Google Drive upload and shareable link
-- Hotkey support with customisable bindings via settings window
-- Desktop notifications
-- PyInstaller build configuration
-- GitHub Actions CI/CD pipeline
+- OAuth 2.0 sign-in with cached tokens; credentials loaded from keyring, `DRIVEBOX_CLIENT_SECRETS` env var, or a local file, in that order
+- Google Drive upload with shareable link generation
+- Fullscreen screenshot capture, clipboard copy
+- System tray icon with an auth-aware context menu
+- Global hotkey (`Ctrl+Shift+S`)
+- PyInstaller packaging and a GitHub Actions build/release pipeline
+- Unit test suite with pre-commit hooks (ruff, mypy)
+
+## [0.1.0-beta] - 2025-07-15
+
+Initial prototype.
+
+### Added
+- Screen capture via `mss`, upload to Google Drive, clipboard copy
+- System tray with a configurable hotkey and an options window
+- Basic desktop notifications
+- Early attempt at region/area screenshot capture (Wayland support noted as unresolved at the time)
+
+### Known issues
+- Screen recording via ffmpeg was started but not completed

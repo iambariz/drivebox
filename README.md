@@ -118,7 +118,8 @@ src/drivebox/
 ├── config/         # Settings, constants, env var names
 ├── drive/          # Google Drive upload + sharing
 ├── hotkeys/        # Global hotkey listener (pynput)
-├── services/       # Orchestration (capture → upload → clipboard)
+├── services/       # CaptureUploadService (orchestration) + UploadJob
+│                    #   (queued background upload via QThreadPool)
 ├── storage/        # Secure file I/O
 ├── ui/
 │   ├── tray/       # System tray icon
@@ -130,11 +131,15 @@ src/drivebox/
 
 ```
 User action (tray menu / hotkey / window button)
-  → ScreenshotService.take_and_upload_screenshot() / take_and_upload_region()
-      ├─ get_capturer().capture_fullscreen() / capture_region()   → PNG bytes (or None if cancelled)
-      ├─ DriveClient.upload_and_share()                            → shareable URL
-      └─ ClipboardManager.copy(URL)
+  → CaptureUploadService.capture_fullscreen() / capture_region()   (main thread)
+      ├─ get_capturer().capture_fullscreen() / capture_region()    → PNG bytes (or None if cancelled)
+      └─ enqueues an UploadJob on a single-worker QThreadPool       (background thread)
+            ├─ DriveClient.upload_and_share()   → shareable URL
+            ├─ ClipboardManager.copy(URL)
+            └─ upload_finished / upload_failed signal   → back to the UI (main thread)
 ```
+
+Capture stays on the main thread (fast, or intentionally modal for region selection); only the network upload runs in the background, so the window doesn't freeze during a slow upload. This is an in-process worker, not a durable job queue — if the app is closed mid-upload, that job is gone, not resumed on next launch.
 
 ---
 

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- Google Drive upload now runs on a single-worker background queue (`QThreadPool`, `CaptureUploadService` + `UploadJob`) instead of blocking the UI thread — the window stays responsive during slow uploads
+
+### Changed
+- Removed `ScreenshotService` — capture (main thread) and upload+clipboard (worker thread) are now decoupled, so `CaptureUploadService` owns orchestration instead of one class doing both synchronously
+
 ## [1.1.0] - 2026-08-10
 
 ### Added

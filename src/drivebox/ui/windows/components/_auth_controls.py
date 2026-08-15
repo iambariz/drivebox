@@ -5,11 +5,8 @@ import logging
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
-from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token, get_gdrive_service
-from drivebox.capture import get_capturer
-from drivebox.clipboard import ClipboardManager
-from drivebox.drive import DriveClient
-from drivebox.services import ScreenshotService
+from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token
+from drivebox.services import CaptureUploadService
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +23,9 @@ class AuthControls(QWidget):
         self.logout_button: QPushButton
         self.screenshot_button: QPushButton
         self.region_button: QPushButton
+        self._capture_service = CaptureUploadService()
+        self._capture_service.upload_finished.connect(self._on_upload_finished)
+        self._capture_service.upload_failed.connect(self._on_upload_failed)
         self._setup_ui()
         self._update_ui()
 
@@ -70,40 +70,16 @@ class AuthControls(QWidget):
         QMessageBox.information(self, "Logged Out", "Successfully logged out!")
 
     def _take_screenshot(self) -> None:
-        try:
-            drive_service = get_gdrive_service()
-            service = ScreenshotService(
-                capture=get_capturer(),
-                drive_client=DriveClient(drive_service),
-                clipboard=ClipboardManager(),
-            )
-            link = service.take_and_upload_screenshot()
-
-            QMessageBox.information(
-                self, "Screenshot Uploaded!", f"Link copied to clipboard:\n{link}"
-            )
-        except Exception:
-            logger.exception("Screenshot failed")
-            QMessageBox.critical(self, "Error", "Screenshot upload failed")
+        self._capture_service.capture_fullscreen()
 
     def _take_region_screenshot(self) -> None:
-        try:
-            drive_service = get_gdrive_service()
-            service = ScreenshotService(
-                capture=get_capturer(),
-                drive_client=DriveClient(drive_service),
-                clipboard=ClipboardManager(),
-            )
-            link = service.take_and_upload_region()
-            if link is None:
-                return
+        self._capture_service.capture_region()
 
-            QMessageBox.information(
-                self, "Screenshot Uploaded!", f"Link copied to clipboard:\n{link}"
-            )
-        except Exception:
-            logger.exception("Region screenshot failed")
-            QMessageBox.critical(self, "Error", "Region screenshot upload failed")
+    def _on_upload_finished(self, link: str) -> None:
+        QMessageBox.information(self, "Screenshot Uploaded!", f"Link copied to clipboard:\n{link}")
+
+    def _on_upload_failed(self, error: str) -> None:
+        QMessageBox.critical(self, "Error", error)
 
     def _update_ui(self) -> None:
         token = self.auth_service.token_storage.load()

@@ -1,4 +1,5 @@
-from .screenshot_service import ScreenshotService
+from .capture_upload_service import CaptureUploadService
+from .upload_worker import UploadJob, UploadJobSignals
 
 
-__all__ = ["ScreenshotService"]
+__all__ = ["CaptureUploadService", "UploadJob", "UploadJobSignals"]

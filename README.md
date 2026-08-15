@@ -84,6 +84,8 @@ pip install -e .[dev]
 
 ## Development
 
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for branch naming, the CHANGELOG requirement (CI-enforced), and the release process.
+
 ### Commands
 
 ```bash

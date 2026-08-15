@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Removed `ScreenshotService` — capture (main thread) and upload+clipboard (worker thread) are now decoupled, so `CaptureUploadService` owns orchestration instead of one class doing both synchronously
 
+### Process
+- Added `CONTRIBUTING.md` and a CI check (`changelog-check` in `test.yml`) requiring a `CHANGELOG.md` entry on any PR touching `src/`; versioning/release process documented (version bumps only happen at release time, not per-PR)
+
 ## [1.1.0] - 2026-08-10
 
 ### Added

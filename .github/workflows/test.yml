@@ -7,6 +7,23 @@ on:
     branches: [ master ]
 
 jobs:
+  changelog-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a CHANGELOG entry for src/ changes
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          changed_files=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$changed_files" | grep -q '^src/' && ! echo "$changed_files" | grep -q '^CHANGELOG.md$'; then
+            echo "::error::This PR changes src/ but does not update CHANGELOG.md. Add an entry under [Unreleased] — see CONTRIBUTING.md."
+            exit 1
+          fi
+
   test:
     runs-on: ubuntu-latest
     steps:

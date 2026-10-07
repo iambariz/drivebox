@@ -16,7 +16,9 @@ jobs:
           - os: ubuntu-latest
             artifact_name: drivebox-linux
             executable: dist/drivebox
-            smoke_test_prefix: xvfb-run -a
+            # pynput needs an X display to import, and the runner has none. Without one,
+            # PyInstaller can't discover pynput's X11 backend and silently leaves it out.
+            display_prefix: xvfb-run -a
           - os: windows-latest
             artifact_name: drivebox-windows
             executable: dist/drivebox.exe
@@ -71,7 +73,7 @@ jobs:
               img.save(build_dir / "icon.icns", format="ICNS")
 
       - name: Build executable
-        run: pyinstaller drivebox.spec
+        run: ${{ matrix.display_prefix }} pyinstaller drivebox.spec
 
       # PyInstaller succeeds even when a dependency is missing from the bundle
       # (v1.1.0 shipped without PyQt5), so run the frozen binary before releasing.
@@ -79,7 +81,7 @@ jobs:
       - name: Smoke test executable
         shell: bash
         timeout-minutes: 3
-        run: ${{ matrix.smoke_test_prefix }} ./${{ matrix.executable }} --smoke-test
+        run: ${{ matrix.display_prefix }} ./${{ matrix.executable }} --smoke-test
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

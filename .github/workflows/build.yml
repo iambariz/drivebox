@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+  workflow_dispatch: # build + smoke-test any branch without publishing a release
 
 jobs:
   build:
@@ -71,6 +72,14 @@ jobs:
       - name: Build executable
         run: pyinstaller drivebox.spec
 
+      # PyInstaller succeeds even when a dependency is missing from the bundle
+      # (v1.1.0 shipped without PyQt5), so run the frozen binary before releasing.
+      # On Windows a crash opens a blocking error dialog, hence the timeout.
+      - name: Smoke test executable
+        shell: bash
+        timeout-minutes: 3
+        run: ./${{ matrix.executable }} --smoke-test
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -79,6 +88,7 @@ jobs:
 
   release:
     needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -94,6 +104,7 @@ jobs:
           cp artifacts/drivebox-linux/drivebox drivebox-linux
           cp artifacts/drivebox-windows/drivebox.exe drivebox-windows.exe
           cp artifacts/drivebox-macos/drivebox drivebox-macos
+          sha256sum drivebox-linux drivebox-windows.exe drivebox-macos > SHA256SUMS.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -102,4 +113,5 @@ jobs:
             drivebox-linux
             drivebox-windows.exe
             drivebox-macos
+            SHA256SUMS.txt
           generate_release_notes: true

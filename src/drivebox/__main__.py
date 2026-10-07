@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from dotenv import load_dotenv
+from googleapiclient.discovery import build
 
 from drivebox.app import main as app_main
 
@@ -27,7 +28,22 @@ def setup_logging() -> None:
     )
 
 
+def smoke_test() -> int:
+    """Verify a frozen build is complete: every module imports and bundled data loads.
+
+    Run by CI against the built binary, since PyInstaller succeeds even when a
+    dependency is missing from the bundle.
+    """
+    # Offline build from the bundled discovery document; no network or credentials used.
+    build("drive", "v3", developerKey="smoke-test", static_discovery=True)
+    print("drivebox smoke test OK")
+    return 0
+
+
 def main() -> int:
+    if "--smoke-test" in sys.argv:
+        return smoke_test()
+
     setup_logging()
     logger = logging.getLogger(__name__)
 

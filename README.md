@@ -21,6 +21,24 @@ Grab the latest binary for your platform from the [Releases](https://github.com/
 | Windows  | `drivebox-windows.exe` |
 | macOS    | `drivebox-macos` |
 
+### "Windows protected your PC" / unidentified developer warnings
+
+The binaries aren't code-signed yet (signing certificates cost money), so Windows SmartScreen and macOS Gatekeeper will warn the first time you run them. This is expected for unsigned open-source software:
+
+- **Windows:** click **More info → Run anyway**. Alternatively, right-click the file → **Properties** → tick **Unblock** → OK.
+- **macOS:** right-click the binary → **Open**, then confirm. Or run `xattr -d com.apple.quarantine drivebox-macos`.
+
+Every binary is built by GitHub Actions from the tagged source (see [`build.yml`](.github/workflows/build.yml)). To check your download matches the published release, compare it against `SHA256SUMS.txt` from the same release:
+
+```bash
+sha256sum -c SHA256SUMS.txt --ignore-missing        # Linux
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing    # macOS
+```
+
+```powershell
+Get-FileHash drivebox-windows.exe -Algorithm SHA256  # Windows: compare with SHA256SUMS.txt
+```
+
 ---
 
 ## Features

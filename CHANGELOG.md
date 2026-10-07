@@ -9,7 +9,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Google Drive upload now runs on a single-worker background queue (`QThreadPool`, `CaptureUploadService` + `UploadJob`) instead of blocking the UI thread — the window stays responsive during slow uploads
 
+### Fixed
+- Release binaries crashed on startup on every platform: PyQt5 was only a `dev` extra, so the release build (`pip install -e .`) never bundled it. It's now a runtime dependency
+
 ### Changed
+- Windows `.exe` now carries version metadata (publisher, product name, version) and is no longer UPX-compressed, both to reduce antivirus false positives
+- Release builds now run the frozen binary with `--smoke-test` on all three platforms before publishing, and the release includes a `SHA256SUMS.txt`. `build.yml` can also be run manually (`workflow_dispatch`) to test a branch without creating a release
+- README explains the unsigned-binary warnings on Windows/macOS and how to verify downloads
 - Removed `ScreenshotService` — capture (main thread) and upload+clipboard (worker thread) are now decoupled, so `CaptureUploadService` owns orchestration instead of one class doing both synchronously
 
 ### Process

@@ -16,6 +16,7 @@ jobs:
           - os: ubuntu-latest
             artifact_name: drivebox-linux
             executable: dist/drivebox
+            smoke_test_prefix: xvfb-run -a
           - os: windows-latest
             artifact_name: drivebox-windows
             executable: dist/drivebox.exe
@@ -78,7 +79,7 @@ jobs:
       - name: Smoke test executable
         shell: bash
         timeout-minutes: 3
-        run: ./${{ matrix.executable }} --smoke-test
+        run: ${{ matrix.smoke_test_prefix }} ./${{ matrix.executable }} --smoke-test
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -42,6 +42,13 @@ class MainWindow(QMainWindow):
         self._hotkey_listener = HotkeyListener(actions=CAPTURE_ACTIONS, parent=self)
         self._hotkey_listener.action_triggered.connect(self._on_capture_action)
         self._hotkey_listener.start()
+        if not self._hotkey_listener.available:
+            self.tray_icon.showMessage(
+                "Drivebox",
+                "Global hotkeys aren't supported in this session. Use the tray menu instead.",
+                QSystemTrayIcon.Warning,  # type: ignore[attr-defined]
+                5000,
+            )
 
     def closeEvent(self, event):  # noqa: N802
         """Minimize to tray instead of closing."""

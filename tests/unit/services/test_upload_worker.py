@@ -15,7 +15,7 @@ def test_run_emits_finished_with_link():
     drive_client.upload_and_share.return_value = "https://drive.google.com/file/d/abc123/view"
     clipboard = MagicMock()
 
-    job = UploadJob(b"png_bytes", "screenshot_20260315_120000.png", drive_client, clipboard)
+    job = UploadJob(b"png_bytes", "screenshot_20260315_120000.png", lambda: drive_client, clipboard)
 
     finished_links = []
     failed_errors = []
@@ -37,7 +37,7 @@ def test_run_emits_failed_on_upload_error():
     drive_client.upload_and_share.side_effect = RuntimeError("upload failed")
     clipboard = MagicMock()
 
-    job = UploadJob(b"png_bytes", "screenshot_20260315_120000.png", drive_client, clipboard)
+    job = UploadJob(b"png_bytes", "screenshot_20260315_120000.png", lambda: drive_client, clipboard)
 
     finished_links = []
     failed_errors = []
@@ -49,3 +49,20 @@ def test_run_emits_failed_on_upload_error():
     clipboard.copy.assert_not_called()
     assert finished_links == []
     assert failed_errors == ["upload failed"]
+
+
+def test_run_emits_failed_when_drive_client_cannot_be_created():
+    clipboard = MagicMock()
+
+    def failing_factory():
+        raise RuntimeError("auth failed")
+
+    job = UploadJob(b"png_bytes", "screenshot_20260315_120000.png", failing_factory, clipboard)
+
+    failed_errors = []
+    job.signals.failed.connect(failed_errors.append)
+
+    job.run()
+
+    clipboard.copy.assert_not_called()
+    assert failed_errors == ["auth failed"]

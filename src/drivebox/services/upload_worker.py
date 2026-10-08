@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Callable
 
 from PyQt5.QtCore import QObject, QRunnable, pyqtSignal
 
@@ -19,19 +20,21 @@ class UploadJob(QRunnable):
         self,
         image_data: bytes,
         filename: str,
-        drive_client: DriveClient,
+        drive_client_factory: Callable[[], DriveClient],
         clipboard: ClipboardManager,
     ) -> None:
         super().__init__()
         self.image_data = image_data
         self.filename = filename
-        self.drive_client = drive_client
+        self.drive_client_factory = drive_client_factory
         self.clipboard = clipboard
         self.signals = UploadJobSignals()
 
     def run(self) -> None:
         try:
-            link = self.drive_client.upload_and_share(self.image_data, self.filename)
+            # Built here so token refresh or re-authentication stays off the UI thread
+            drive_client = self.drive_client_factory()
+            link = drive_client.upload_and_share(self.image_data, self.filename)
             self.clipboard.copy(link)
         except Exception as e:
             logger.exception("Upload failed")

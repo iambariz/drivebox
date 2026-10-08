@@ -29,12 +29,8 @@ def setup_logging() -> None:
 
 
 def smoke_test() -> int:
-    """Verify a frozen build is complete: every module imports and bundled data loads.
-
-    Run by CI against the built binary, since PyInstaller succeeds even when a
-    dependency is missing from the bundle.
-    """
-    # Offline build from the bundled discovery document; no network or credentials used.
+    """Check that the frozen build bundled all modules and data files (used by CI)."""
+    # Offline, uses the bundled discovery document
     build("drive", "v3", developerKey="smoke-test", static_discovery=True)
     print("drivebox smoke test OK")
     return 0

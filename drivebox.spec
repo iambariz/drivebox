@@ -20,10 +20,7 @@ def _resolve_icon() -> str | None:
 
 
 def _write_windows_version_file() -> str | None:
-    """Embed publisher/product/version metadata in the .exe (shown in Properties > Details).
-
-    Unlabelled executables look more suspicious to Windows Defender and SmartScreen.
-    """
+    """Windows version resource, shown in the .exe's Properties > Details."""
     if sys.platform != "win32":
         return None
 
@@ -114,7 +111,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,  # UPX-packed executables are a common antivirus false-positive trigger
+    upx=False,  # UPX triggers antivirus false positives
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,  # No terminal window

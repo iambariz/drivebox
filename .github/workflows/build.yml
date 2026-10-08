@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
-  workflow_dispatch: # build + smoke-test any branch without publishing a release
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,8 +16,7 @@ jobs:
           - os: ubuntu-latest
             artifact_name: drivebox-linux
             executable: dist/drivebox
-            # pynput needs an X display to import, and the runner has none. Without one,
-            # PyInstaller can't discover pynput's X11 backend and silently leaves it out.
+            # pynput needs an X display, otherwise its backend isn't bundled
             display_prefix: xvfb-run -a
           - os: windows-latest
             artifact_name: drivebox-windows
@@ -75,9 +74,7 @@ jobs:
       - name: Build executable
         run: ${{ matrix.display_prefix }} pyinstaller drivebox.spec
 
-      # PyInstaller succeeds even when a dependency is missing from the bundle
-      # (v1.1.0 shipped without PyQt5), so run the frozen binary before releasing.
-      # On Windows a crash opens a blocking error dialog, hence the timeout.
+      # Timeout because a crash on Windows opens a blocking error dialog
       - name: Smoke test executable
         shell: bash
         timeout-minutes: 3

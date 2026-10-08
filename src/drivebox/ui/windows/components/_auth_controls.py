@@ -9,6 +9,7 @@ from drivebox.services import CaptureUploadService, LoginJob
 
 class AuthControls(QWidget):
     auth_state_changed = pyqtSignal(bool)  # True = logged in
+    upload_notification = pyqtSignal(str, str, bool)  # title, message, is_error
 
     def __init__(self) -> None:
         super().__init__()
@@ -84,10 +85,12 @@ class AuthControls(QWidget):
         self._capture_service.capture_region()
 
     def _on_upload_finished(self, link: str) -> None:
-        QMessageBox.information(self, "Screenshot Uploaded!", f"Link copied to clipboard:\n{link}")
+        self.upload_notification.emit(
+            "Screenshot uploaded", f"Link copied to clipboard:\n{link}", False
+        )
 
     def _on_upload_failed(self, error: str) -> None:
-        QMessageBox.critical(self, "Error", error)
+        self.upload_notification.emit("Upload failed", error, True)
 
     def _update_ui(self) -> None:
         is_authenticated = self.auth_service.has_session()

@@ -1,5 +1,12 @@
 from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QApplication, QMainWindow, QSystemTrayIcon, QVBoxLayout, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QMessageBox,
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
+)
 
 from drivebox.actions import CAPTURE_ACTIONS
 from drivebox.hotkeys import HotkeyListener
@@ -34,6 +41,7 @@ class MainWindow(QMainWindow):
 
         self._authenticated = False
         self.auth_controls.auth_state_changed.connect(self._on_auth_state_changed)
+        self.auth_controls.upload_notification.connect(self._notify)
         self.auth_controls._update_ui()  # sync tray to current auth state
 
         self.tray_icon.activated.connect(self.on_tray_activated)
@@ -82,6 +90,20 @@ class MainWindow(QMainWindow):
     def _on_auth_state_changed(self, authenticated: bool) -> None:
         self._authenticated = authenticated
         self.tray_icon.set_authenticated(authenticated)
+
+    def _notify(self, title: str, message: str, is_error: bool) -> None:
+        tray_messages = (
+            QSystemTrayIcon.isSystemTrayAvailable()
+            and QSystemTrayIcon.supportsMessages()
+            and self.tray_icon.isVisible()
+        )
+        if tray_messages:
+            icon = QSystemTrayIcon.Critical if is_error else QSystemTrayIcon.Information  # type: ignore[attr-defined]
+            self.tray_icon.showMessage(title, message, icon, 5000)
+        elif is_error:
+            QMessageBox.critical(self, title, message)
+        else:
+            QMessageBox.information(self, title, message)
 
     def _on_capture_action(self, action_id: str) -> None:
         if not self._authenticated:

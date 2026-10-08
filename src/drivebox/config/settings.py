@@ -9,13 +9,11 @@ class AppSettings:
     app_dir: Path = Path.home() / ".drivebox"
     token_filename: str = "token.pickle"
     credentials_filename: str = "credentials.json"
-    sync_dir: Path = Path.home() / "Drivebox"
     log_dir: Path = Path.home() / ".drivebox" / "logs"
 
     def __post_init__(self) -> None:
         """Ensure directories exist."""
         self.app_dir.mkdir(exist_ok=True)
-        self.sync_dir.mkdir(exist_ok=True)
         self.log_dir.mkdir(exist_ok=True)
 
     @property

@@ -5,6 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from drivebox.auth.services import CredentialRefreshService, GoogleDriveAuthService
+from drivebox.config import OAUTH_TIMEOUT_SECONDS
 
 
 # --- CredentialRefreshService ---
@@ -51,6 +52,15 @@ def test_refresh_returns_none_on_exception(refresh_service):
     with patch("drivebox.auth.services.Request"):
         result = refresh_service.refresh_if_needed(creds)
     assert result is None
+
+
+def test_create_new_credentials_uses_timeout(refresh_service, credential_loader):
+    credential_loader.load.return_value = {"installed": {}}
+    with patch("drivebox.auth.services.InstalledAppFlow") as flow_cls:
+        refresh_service.create_new_credentials()
+    flow_cls.from_client_config.return_value.run_local_server.assert_called_once_with(
+        port=0, timeout_seconds=OAUTH_TIMEOUT_SECONDS
+    )
 
 
 def test_create_new_credentials_raises_when_no_secrets(refresh_service, credential_loader):
@@ -118,3 +128,23 @@ def test_get_credentials_runs_oauth_when_refresh_fails(
 def test_revoke_credentials_deletes_token(auth_service, token_storage):
     auth_service.revoke_credentials()
     token_storage.delete.assert_called_once()
+
+
+def test_has_session_true_when_token_valid(auth_service, token_storage):
+    token_storage.load.return_value = MagicMock(valid=True)
+    assert auth_service.has_session() is True
+
+
+def test_has_session_true_when_expired_but_refreshable(auth_service, token_storage):
+    token_storage.load.return_value = MagicMock(valid=False, refresh_token="refresh")
+    assert auth_service.has_session() is True
+
+
+def test_has_session_false_when_expired_without_refresh_token(auth_service, token_storage):
+    token_storage.load.return_value = MagicMock(valid=False, refresh_token=None)
+    assert auth_service.has_session() is False
+
+
+def test_has_session_false_when_no_token(auth_service, token_storage):
+    token_storage.load.return_value = None
+    assert auth_service.has_session() is False

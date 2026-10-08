@@ -19,6 +19,7 @@ from drivebox.config import (
     CREDENTIALS_KEY,
     ENV_VAR_CREDENTIALS,
     GOOGLE_DRIVE_SCOPES,
+    OAUTH_TIMEOUT_SECONDS,
     SERVICE_NAME,
     AppSettings,
 )
@@ -57,7 +58,7 @@ class CredentialRefreshService:
             )
 
         flow = InstalledAppFlow.from_client_config(client_secrets, self.scopes)
-        creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=0, timeout_seconds=OAUTH_TIMEOUT_SECONDS)
         logger.info("New credentials obtained via OAuth")
         return cast("Credentials", creds)
 
@@ -84,6 +85,11 @@ class GoogleDriveAuthService:
 
         self.token_storage.save(creds)
         return creds
+
+    def has_session(self) -> bool:
+        """True if a saved token is valid or can be refreshed without signing in again."""
+        creds = self.token_storage.load()
+        return creds is not None and (creds.valid or bool(creds.refresh_token))
 
     def get_service(self) -> Resource:
         creds = self.get_credentials()

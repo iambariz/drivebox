@@ -1,15 +1,10 @@
 """Authentication UI controls."""
 
-import logging
-
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QThreadPool, pyqtSignal
 from PyQt5.QtWidgets import QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from drivebox.auth import GoogleDriveAuthServiceFactory, delete_token
-from drivebox.services import CaptureUploadService
-
-
-logger = logging.getLogger(__name__)
+from drivebox.services import CaptureUploadService, LoginJob
 
 
 class AuthControls(QWidget):
@@ -23,6 +18,9 @@ class AuthControls(QWidget):
         self.logout_button: QPushButton
         self.screenshot_button: QPushButton
         self.region_button: QPushButton
+        self._login_pool = QThreadPool()
+        self._login_pool.setMaxThreadCount(1)
+        self._login_in_progress = False
         self._capture_service = CaptureUploadService()
         self._capture_service.upload_finished.connect(self._on_upload_finished)
         self._capture_service.upload_failed.connect(self._on_upload_failed)
@@ -50,19 +48,29 @@ class AuthControls(QWidget):
         self.region_button.clicked.connect(self._take_region_screenshot)
 
     def _handle_login(self) -> None:
-        try:
-            self.auth_service.get_credentials()
-            self._update_ui()
-            QMessageBox.information(self, "Success", "Successfully authenticated!")
-        except FileNotFoundError as e:
-            QMessageBox.critical(
-                self,
-                "Credentials Missing",
-                f"Could not find Google OAuth credentials.\n\n{e}",
-            )
-        except Exception:
-            logger.exception("Login failed")
-            QMessageBox.critical(self, "Error", "Authentication failed")
+        if self._login_in_progress:
+            return
+        self._login_in_progress = True
+        self.signin_button.setEnabled(False)
+        self.greeting_label.setText("Waiting for sign-in in your browser...")
+
+        job = LoginJob(self.auth_service)
+        job.signals.succeeded.connect(self._on_login_succeeded)
+        job.signals.failed.connect(self._on_login_failed)
+        self._login_pool.start(job)
+
+    def _on_login_succeeded(self) -> None:
+        self._finish_login()
+        QMessageBox.information(self, "Success", "Successfully authenticated!")
+
+    def _on_login_failed(self, error: str) -> None:
+        self._finish_login()
+        QMessageBox.critical(self, "Sign-in Failed", error)
+
+    def _finish_login(self) -> None:
+        self._login_in_progress = False
+        self.signin_button.setEnabled(True)
+        self._update_ui()
 
     def _handle_logout(self) -> None:
         delete_token()
@@ -82,8 +90,7 @@ class AuthControls(QWidget):
         QMessageBox.critical(self, "Error", error)
 
     def _update_ui(self) -> None:
-        token = self.auth_service.token_storage.load()
-        is_authenticated = token is not None and token.valid
+        is_authenticated = self.auth_service.has_session()
 
         if is_authenticated:
             self.greeting_label.setText("✓ Connected to Google Drive")

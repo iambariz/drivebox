@@ -1,6 +1,6 @@
 # DriveBox
 
-![Build](https://github.com/iambariz/drivebox/actions/workflows/build.yml/badge.svg?branch=v1.1.0)
+![Build](https://github.com/iambariz/drivebox/actions/workflows/build.yml/badge.svg?branch=v1.1.1)
 ![Python](https://img.shields.io/badge/python-3.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)

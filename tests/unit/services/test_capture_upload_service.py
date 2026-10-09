@@ -1,5 +1,6 @@
 """Unit tests for CaptureUploadService."""
 
+import threading
 from unittest.mock import MagicMock, patch
 
 from PyQt5.QtCore import QCoreApplication, QEventLoop, QTimer
@@ -99,3 +100,28 @@ def test_upload_failure_wraps_error_message(
     error = _wait_for_signal(service.upload_failed)
 
     assert error == "Upload failed: network down"
+
+
+@patch("drivebox.services.capture_upload_service.ClipboardManager")
+@patch("drivebox.services.capture_upload_service.DriveClient")
+@patch("drivebox.services.capture_upload_service.get_gdrive_service")
+@patch("drivebox.services.capture_upload_service.get_capturer")
+def test_drive_service_is_created_off_the_calling_thread(
+    mock_get_capturer, mock_get_gdrive_service, mock_drive_client_cls, mock_clipboard_cls
+):
+    mock_capturer = MagicMock()
+    mock_capturer.capture_fullscreen.return_value = b"png_bytes"
+    mock_get_capturer.return_value = mock_capturer
+    calling_thread = threading.get_ident()
+    service_threads = []
+    mock_get_gdrive_service.side_effect = lambda: service_threads.append(threading.get_ident())
+    mock_drive_client_cls.return_value.upload_and_share.return_value = (
+        "https://drive.google.com/file/d/abc123/view"
+    )
+
+    service = CaptureUploadService()
+    service.capture_fullscreen()
+    _wait_for_signal(service.upload_finished)
+
+    assert len(service_threads) == 1
+    assert service_threads[0] != calling_thread

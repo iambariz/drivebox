@@ -139,7 +139,7 @@ src/drivebox/
 ├── drive/          # Google Drive upload + sharing
 ├── hotkeys/        # Global hotkey listener (pynput)
 ├── services/       # CaptureUploadService (orchestration) + UploadJob
-│                    #   (queued background upload via QThreadPool)
+│                    #   (queued background upload via QThreadPool) + LoginJob (background sign-in)
 ├── storage/        # Secure file I/O
 ├── ui/
 │   ├── tray/       # System tray icon
@@ -154,12 +154,13 @@ User action (tray menu / hotkey / window button)
   → CaptureUploadService.capture_fullscreen() / capture_region()   (main thread)
       ├─ get_capturer().capture_fullscreen() / capture_region()    → PNG bytes (or None if cancelled)
       └─ enqueues an UploadJob on a single-worker QThreadPool       (background thread)
+            ├─ DriveClient(get_gdrive_service())  → refreshes the login if needed
             ├─ DriveClient.upload_and_share()   → shareable URL
             ├─ ClipboardManager.copy(URL)
-            └─ upload_finished / upload_failed signal   → back to the UI (main thread)
+            └─ upload_finished / upload_failed signal   → tray notification (main thread)
 ```
 
-Capture stays on the main thread (fast, or intentionally modal for region selection); only the network upload runs in the background, so the window doesn't freeze during a slow upload. This is an in-process worker, not a durable job queue — if the app is closed mid-upload, that job is gone, not resumed on next launch.
+Capture stays on the main thread (fast, or intentionally modal for region selection); login refresh and the network upload run in the background, so the window doesn't freeze during a slow upload. This is an in-process worker, not a durable job queue — if the app is closed mid-upload, that job is gone, not resumed on next launch.
 
 ---
 
@@ -169,7 +170,7 @@ Capture stays on the main thread (fast, or intentionally modal for region select
 - [x] System tray
 - [x] Global hotkey
 - [x] Area/region screenshot
-- [ ] Desktop notifications
+- [x] Desktop notifications
 - [ ] Settings window
 - [ ] Activity log
 - [ ] Video/screen recording capture

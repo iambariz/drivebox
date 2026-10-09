@@ -41,8 +41,12 @@ class CaptureUploadService(QObject):
         self._enqueue_upload(image_data, generate_filename(filename_prefix))
 
     def _enqueue_upload(self, image_data: bytes, filename: str) -> None:
-        drive_service = get_gdrive_service()
-        job = UploadJob(image_data, filename, DriveClient(drive_service), ClipboardManager())
+        job = UploadJob(
+            image_data,
+            filename,
+            lambda: DriveClient(get_gdrive_service()),
+            ClipboardManager(),
+        )
         job.signals.finished.connect(self.upload_finished)
         job.signals.failed.connect(lambda err: self.upload_failed.emit(f"Upload failed: {err}"))
         self._upload_pool.start(job)

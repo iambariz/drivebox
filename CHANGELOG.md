@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+- App showed "Not connected" on launch once the access token had expired (after ~1 hour), even though it could be refreshed silently. A saved token with a refresh token now counts as signed in
+- Sign-in froze the app until the browser flow finished, and forever if the browser tab was closed. Sign-in now runs on a background thread (`LoginJob`) and times out after 3 minutes
+- Uploads could freeze the window while refreshing the login, or for the whole browser sign-in if the saved login had been revoked. The Drive client is now created in the upload worker
+- App crashed at startup on Linux sessions without an X server (pure Wayland), because pynput fails to import there. Global hotkeys are now disabled with a tray warning instead
+
+### Changed
+- Upload results are shown as tray notifications instead of a dialog that had to be dismissed. Falls back to a dialog if the desktop has no tray that supports messages
+
+### Removed
+- Unused `imageio-ffmpeg` and `watchdog` dependencies
+- Empty `~/Drivebox` folder no longer created on every launch
+
 ## [1.1.1] - 2026-10-08
 
 ### Added

@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-09
+
 ### Fixed
 - App showed "Not connected" on launch once the access token had expired (after ~1 hour), even though it could be refreshed silently. A saved token with a refresh token now counts as signed in
 - Sign-in froze the app until the browser flow finished, and forever if the browser tab was closed. Sign-in now runs on a background thread (`LoginJob`) and times out after 3 minutes
